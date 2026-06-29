@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="theme-color" content="#111111">
+  <title>주식 계산기</title>
+  <link rel="manifest" href="manifest.json">
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    :root {
+      --bg: #111111;
+      --surface: #1c1c1e;
+      --surface2: #2c2c2e;
+      --border: #38383a;
+      --text: #ffffff;
+      --text3: #8e8e93;
+      --green: #30d158;
+      --green-dim: rgba(48, 209, 88, 0.12);
+      --green-border: rgba(48, 209, 88, 0.2);
+      --blue: #0a84ff;
+      --blue-dim: rgba(10, 132, 255, 0.12);
+      --blue-border: rgba(10, 132, 255, 0.2);
+      --orange: #ff9f0a;
+      --orange-dim: rgba(255, 159, 10, 0.12);
+      --orange-border: rgba(255, 159, 10, 0.2);
+      --purple: #bf5af2;
+      --purple-dim: rgba(191, 90, 242, 0.12);
+      --purple-border: rgba(191, 90, 242, 0.2);
+      --red: #ff453a;
+      --red-dim: rgba(255, 69, 58, 0.12);
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+      min-height: 100dvh;
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+
+    /* ── Header ── */
+    header {
+      padding: 56px 20px 14px;
+      padding-top: max(56px, calc(20px + env(safe-area-inset-top)));
+    }
+
+    header h1 {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    /* ── Tab Bar ── */
+    .tab-bar {
+      display: flex;
+      margin: 0 16px 4px;
+      background: var(--surface);
+      border-radius: 12px;
+      padding: 4px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+
+    .tab-bar::-webkit-scrollbar { display: none; }
+
+    .tab {
+      flex-shrink: 0;
+      padding: 8px 14px;
+      border-radius: 8px;
+      border: none;
+      font-size: 13px;
+      font-weight: 500;
+      font-family: inherit;
+      cursor: pointer;
+      background: transparent;
+      color: var(--text3);
+      transition: background 0.18s, color 0.18s;
+      letter-spacing: -0.2px;
+      white-space: nowrap;
+    }
+
+    .tab.active {
+      background: var(--surface2);
+      color: var(--text);
+    }
+
+    /* ── Tab Content ── */
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    /* ── Layout ── */
+    main {
+      padding: 4px 16px 32px;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    .section-label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 0 4px;
+      margin: 22px 0 8px;
+    }
+
+    /* ── Input Card ── */
+    .card {
+      background: var(--surface);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .input-item {
+      padding: 12px 16px 14px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .input-item:last-child {
+      border-bottom: none;
+    }
+
+    .input-label-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 6px;
+    }
+
+    .input-label-row label {
+      font-size: 13px;
+      color: var(--text3);
+      font-weight: 400;
+    }
+
+    .input-unit {
+      font-size: 13px;
+      color: var(--text3);
+    }
+
+    .input-item input {
+      width: 100%;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text);
+      font-size: 22px;
+      font-weight: 600;
+      font-family: inherit;
+      letter-spacing: -0.5px;
+      padding: 0;
+      caret-color: var(--green);
+    }
+
+    .input-item input::placeholder {
+      color: var(--border);
+      font-weight: 400;
+    }
+
+    /* ── Result: Big single card (매집비율) ── */
+    .result-main {
+      border-radius: 16px;
+      padding: 24px 20px;
+      text-align: center;
+    }
+
+    .result-main.green {
+      background: var(--green-dim);
+      border: 1px solid var(--green-border);
+    }
+
+    .result-main-label {
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 6px;
+    }
+
+    .result-main.green .result-main-label { color: rgba(48, 209, 88, 0.7); }
+    .result-main.blue  .result-main-label { color: rgba(10, 132, 255, 0.7); }
+
+    .result-main-value {
+      font-size: 60px;
+      font-weight: 800;
+      letter-spacing: -3px;
+      line-height: 1;
+    }
+
+    .result-main.green .result-main-value { color: var(--green); }
+    .result-main.blue  .result-main-value { color: var(--blue); }
+
+    .result-main-value.empty {
+      font-size: 48px;
+      font-weight: 300;
+      color: var(--border);
+      letter-spacing: -1px;
+    }
+
+    .result-main-sub {
+      font-size: 13px;
+      margin-top: 8px;
+      min-height: 18px;
+    }
+
+    .result-main.green .result-main-sub { color: rgba(48, 209, 88, 0.5); }
+    .result-main.blue  .result-main-sub { color: rgba(10, 132, 255, 0.5); }
+
+    .result-main.orange { background: var(--orange-dim); border: 1px solid var(--orange-border); }
+    .result-main.orange .result-main-label { color: rgba(255, 159, 10, 0.7); }
+    .result-main.orange .result-main-value { color: var(--orange); }
+    .result-main.orange .result-main-sub   { color: rgba(255, 159, 10, 0.5); }
+
+    .result-main.purple { background: var(--purple-dim); border: 1px solid var(--purple-border); }
+    .result-main.purple .result-main-label { color: rgba(191, 90, 242, 0.7); }
+    .result-main.purple .result-main-value { color: var(--purple); }
+    .result-main.purple .result-main-sub   { color: rgba(191, 90, 242, 0.5); }
+
+    .result-main-value.price {
+      font-size: 44px;
+      letter-spacing: -2px;
+    }
+
+    /* ── Event selector ── */
+    .event-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .event-btn {
+      padding: 16px 10px;
+      border-radius: 14px;
+      border: 1.5px solid var(--border);
+      background: var(--surface);
+      color: var(--text3);
+      font-size: 14px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      text-align: center;
+      line-height: 1.3;
+      transition: border-color 0.18s, background 0.18s, color 0.18s;
+    }
+
+    .event-btn .event-rate {
+      display: block;
+      font-size: 12px;
+      color: var(--text3);
+      font-weight: 400;
+      margin-top: 5px;
+      transition: color 0.18s;
+    }
+
+    .event-btn.active {
+      border-color: var(--orange);
+      background: var(--orange-dim);
+      color: var(--text);
+    }
+
+    .event-btn.active .event-rate { color: var(--orange); }
+
+    /* ── Info cards (눌림목매매) ── */
+    .info-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .info-card {
+      background: var(--surface);
+      border-radius: 16px;
+      padding: 18px 16px;
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+    }
+
+    .info-num {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--green);
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--green-dim);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .info-num.red {
+      color: var(--red);
+      background: var(--red-dim);
+    }
+
+    .info-body { flex: 1; }
+
+    .info-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 5px;
+    }
+
+    .info-desc {
+      font-size: 14px;
+      color: var(--text3);
+      line-height: 1.6;
+    }
+
+    /* ── Period selector ── */
+    .period-bar {
+      display: flex;
+      background: var(--surface);
+      border-radius: 12px;
+      padding: 4px;
+    }
+
+    .period-btn {
+      flex: 1;
+      padding: 8px 4px;
+      border-radius: 8px;
+      border: none;
+      font-size: 14px;
+      font-weight: 500;
+      font-family: inherit;
+      cursor: pointer;
+      background: transparent;
+      color: var(--text3);
+      transition: background 0.18s, color 0.18s;
+    }
+
+    .period-btn.active {
+      background: var(--surface2);
+      color: var(--text);
+    }
+
+    /* ── Result: Reference row card ── */
+    .result-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .result-row:last-child { border-bottom: none; }
+
+    .result-label {
+      font-size: 15px;
+      color: var(--text3);
+    }
+
+    .result-value {
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--text);
+      text-align: right;
+    }
+
+    .result-value.empty {
+      color: var(--border);
+      font-weight: 400;
+    }
+
+    .result-value-wrap { text-align: right; }
+
+    .result-value-sub {
+      font-size: 12px;
+      color: var(--text3);
+      font-weight: 400;
+      margin-top: 1px;
+    }
+
+    /* ── Reset button ── */
+    .btn-reset {
+      width: 100%;
+      padding: 15px;
+      background: var(--surface);
+      border: none;
+      border-radius: 14px;
+      color: var(--text3);
+      font-size: 16px;
+      font-family: inherit;
+      cursor: pointer;
+      margin-top: 24px;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    .btn-reset:active { background: var(--surface2); }
+
+    /* ── Animation ── */
+    @keyframes pop {
+      0%   { transform: scale(0.97); }
+      60%  { transform: scale(1.02); }
+      100% { transform: scale(1); }
+    }
+
+    .pop { animation: pop 0.2s ease; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>주식 계산기</h1>
+  </header>
+
+  <div class="tab-bar">
+    <button class="tab active" data-tab="accum">매집비율</button>
+    <button class="tab" data-tab="supply">수급맥점</button>
+    <button class="tab" data-tab="event">이벤트변동성</button>
+    <button class="tab" data-tab="volume">최소거래량</button>
+    <button class="tab" data-tab="pullback">눌림목매매</button>
+    <button class="tab" data-tab="sell">매도타이밍</button>
+  </div>
+
+  <main>
+
+    <!-- ───────── Tab 1: 매집비율 ───────── -->
+    <section id="tab-accum" class="tab-content active">
+
+      <div class="section-label">입력</div>
+      <div class="card">
+        <div class="input-item">
+          <div class="input-label-row">
+            <label for="a_avgPrice">매집기간 평균주가</label>
+            <span class="input-unit">원</span>
+          </div>
+          <input type="text" inputmode="decimal" id="a_avgPrice"
+                 placeholder="0" autocomplete="off" autocorrect="off" spellcheck="false">
+        </div>
+        <div class="input-item">
+          <div class="input-label-row">
+            <label for="a_floatShares">유동주식 수</label>
+            <span class="input-unit">주</span>
+          </div>
+          <input type="text" inputmode="decimal" id="a_floatShares"
+                 placeholder="0" autocomplete="off" autocorrect="off" spellcheck="false">
+        </div>
+        <div class="input-item">
+          <div class="input-label-row">
+            <label for="a_totalAmount">기간 내 총 매집금액</label>
+            <span class="input-unit">억원</span>
+          </div>
+          <input type="text" inputmode="decimal" id="a_totalAmount"
+                 placeholder="0" autocomplete="off" autocorrect="off" spellcheck="false">
+        </div>
+      </div>
+
+      <div class="section-label">계산 결과</div>
+
+      <div class="result-main green" id="a_mainCard">
+        <div class="result-main-label">예상 주가 상승율</div>
+        <div class="result-main-value empty" id="a_mainValue">—</div>
+        <div class="result-main-sub" id="a_mainSub"></div>
+      </div>
+
+      <div class="card" style="margin-top: 12px;">
+        <div class="result-row">
+          <span class="result-label">유동주식 시가총액</span>
+          <div class="result-value-wrap">
+            <div class="result-value empty" id="a_floatCap">—</div>
+            <div class="result-value-sub" id="a_floatCapSub"></div>
+          </div>
+        </div>
+        <div class="result-row">
+          <span class="result-label">매집비율</span>
+          <div class="result-value empty" id="a_accumRatio">—</div>
+        </div>
+      </div>
+
+      <button class="btn-reset" id="a_resetBtn">초기화</button>
+    </section>
+
+    <!-- ───────── Tab 2: 수급맥점 ───────── -->
+    <section id="tab-supply" class="tab-content">
+
+      <div class="section-label">입력</div>
+      <div class="card">
+        <div class="input-item">
+          <div class="input-label-row">
+            <label for="s_floatShares">유동주식 수</label>
+            <span class="input-unit">주</span>
+          </div>
+          <input type="text" inputmode="decimal" id="s_floatShares"
+                 placeholder="0" autocomplete="off" autocorrect="off" spellcheck="false">
+        </div>
+        <div class="input-item">
+          <div class="input-label-row">
+            <label for="s_closePrice">종가</label>
+            <span class="input-unit">원</span>
+          </div>
+          <input type="text" inputmode="decimal" id="s_closePrice"
+                 placeholder="0" autocomplete="off" autocorrect="off" spellcheck="false">
+        </div>
+      </div>
+
+      <div class="section-label">기간 선택</div>
+      <div class="period-bar">
+        <button class="period-btn active" data-period="daily">일봉</button>
+        <button class="period-btn" data-period="weekly">주봉</button>
+      </div>
+
+      <div class="section-label">계산 결과</div>
+
+      <div class="result-main green" id="s_mainCard">
+        <div class="result-main-label" id="s_mainLabel">일봉기준 수급맥점</div>
+        <div class="result-main-value empty" id="s_mainValue">—</div>
+        <div class="result-main-sub" id="s_mainSub"></div>
+      </div>
+
+      <div class="card" style="margin-top: 12px;">
+        <div class="result-row">
+          <span class="result-label">유동주식 시가총액</span>
+          <div class="result-value-wrap">
+            <div class="result-value empty" id="s_floatCap">—</div>
+            <div class="result-value-sub" id="s_floatCapSub"></div>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-reset" id="s_resetBtn">초기화</button>
+    </section>
+
+    <!-- ───────── Tab 3: 이벤트변동성 ───────── -->
+    <section id="tab-event" class="tab-content">
+
+      <div class="section-label">입력</div>
+      <div class="card">
+        <div class="input-item">
+          <div class="input-label-row">
+            <label for="e_closePrice">종가</label>
+            <span class="input-unit">원</span>
+          </div>
+          <input type="text" inputmode="decimal" id="e_closePrice"
+                 placeholder="0" autocomplete="off" autocorrect="off" spellcheck="false">
+        </div>
+      </div>
+
+      <div class="section-label">이벤트 선택</div>
+      <div class="event-grid">
+        <button class="event-btn active" data-event="domestic">
+          국내이벤트
+          <span class="event-rate">+30%</span>
+        </button>
+        <button class="event-btn" data-event="global">
+          글로벌이벤트
+          <span class="event-rate">+100%</span>
+        </button>
+        <button class="event-btn" data-event="politics">
+          정치테마주
+          <span class="event-rate">+300%</span>
+        </button>
+        <button class="event-btn" data-event="election">
+          대선정책주
+          <span class="event-rate">+500%</span>
+        </button>
+      </div>
+
+      <div class="section-label">계산 결과</div>
+      <div class="result-main orange">
+        <div class="result-main-label" id="e_mainLabel">예상 주가</div>
+        <div class="result-main-value price empty" id="e_mainValue">—</div>
+        <div class="result-main-sub" id="e_mainSub"></div>
+      </div>
+
+      <button class="btn-reset" id="e_resetBtn">초기화</button>
+    </section>
+
+    <!-- ───────── Tab 4: 최소거래량찾기 ───────── -->
+    <section id="tab-volume" class="tab-content">
+
+      <div class="section-label">입력</div>
+      <div class="card">
+        <div class="input-item">
+          <div class="input-label-row">
+            <label for="v_maxVolume">최대거래량</label>
+            <span class="input-unit">만주</span>
+          </div>
+          <input type="text" inputmode="decimal" id="v_maxVolume"
+                 placeholder="0" autocomplete="off" autocorrect="off" spellcheck="false">
+        </div>
+      </div>
+
+      <div class="section-label">계산 결과</div>
+      <div class="result-main purple">
+        <div class="result-main-label">최소거래량</div>
+        <div class="result-main-value empty" id="v_mainValue">—</div>
+        <div class="result-main-sub" id="v_mainSub"></div>
+      </div>
+
+      <button class="btn-reset" id="v_resetBtn">초기화</button>
+    </section>
+
+    <!-- ───────── Tab 5: 눌림목매매 ───────── -->
+    <section id="tab-pullback" class="tab-content">
+
+      <div class="section-label">매매 기준</div>
+      <div class="info-list">
+        <div class="info-card">
+          <div class="info-num">1</div>
+          <div class="info-body">
+            <div class="info-title">단기간에 나타나는 강한 상승</div>
+            <div class="info-desc">15거래일 이내 50% 이상 상승</div>
+          </div>
+        </div>
+        <div class="info-card">
+          <div class="info-num">2</div>
+          <div class="info-body">
+            <div class="info-title">폭발적인 거래량</div>
+            <div class="info-desc">하루 거래량이 유동주식 수 대비 100% 이상</div>
+          </div>
+        </div>
+        <div class="info-card">
+          <div class="info-num">3</div>
+          <div class="info-body">
+            <div class="info-title">상승 흐름의 연속성</div>
+            <div class="info-desc">5거래일 연속 양봉</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-label">분할매수 기준</div>
+      <div class="info-list">
+        <div class="info-card">
+          <div class="info-num">1</div>
+          <div class="info-body">
+            <div class="info-title">1차 매수</div>
+            <div class="info-desc">48일 이동평균선 부근</div>
+          </div>
+        </div>
+        <div class="info-card">
+          <div class="info-num">2</div>
+          <div class="info-body">
+            <div class="info-title">2차 매수</div>
+            <div class="info-desc">25일 이동평균선 기준 20% 하락한 지점</div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ───────── Tab 6: 매도타이밍 ───────── -->
+    <section id="tab-sell" class="tab-content">
+
+      <div class="section-label">매도 타이밍</div>
+      <div class="info-list">
+        <div class="info-card">
+          <div class="info-num red">1</div>
+          <div class="info-body">
+            <div class="info-title">매물대 구간</div>
+            <div class="info-desc">5일선이 우하향으로 꺾이는 구간<br>추격매수자의 매물이 쌓이는 자리</div>
+          </div>
+        </div>
+        <div class="info-card">
+          <div class="info-num red">2</div>
+          <div class="info-body">
+            <div class="info-title">추세가 꺾이는 지점</div>
+            <div class="info-desc">20일선이 60일선 아래로 내려오는 데드크로스<br>심리적으로 포기하거나 정리하는 저항 구간</div>
+          </div>
+        </div>
+        <div class="info-card">
+          <div class="info-num red">3</div>
+          <div class="info-body">
+            <div class="info-title">갭하락을 메꾸는 자리</div>
+            <div class="info-desc">갭을 메꾸는 단기 고점자리</div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <script>
+    /* ── Utilities ── */
+
+    function toKorean(n) {
+      if (n >= 1e12) return (n / 1e12).toFixed(1).replace(/\.0$/, '') + '조원';
+      if (n >= 1e8)  return (n / 1e8).toFixed(1).replace(/\.0$/, '')  + '억원';
+      if (n >= 1e4)  return (n / 1e4).toFixed(0) + '만원';
+      return n.toLocaleString('ko-KR') + '원';
+    }
+
+    function toComma(n) {
+      return Math.round(n).toLocaleString('ko-KR');
+    }
+
+    function parseNum(val) {
+      const n = parseFloat(val.replace(/,/g, ''));
+      return isFinite(n) && n > 0 ? n : 0;
+    }
+
+    // Format to 억원 with up to 2 decimal places
+    function toEok(n) {
+      const eok = n / 1e8;
+      if (eok >= 100)  return eok.toFixed(0);
+      if (eok >= 10)   return eok.toFixed(1).replace(/\.0$/, '');
+      return eok.toFixed(2).replace(/\.?0+$/, '');
+    }
+
+    // Apply comma formatting while preserving cursor
+    function applyFormat(input) {
+      const pos = input.selectionStart;
+      const old = input.value;
+      const rawBefore = old.substring(0, pos).replace(/[^0-9]/g, '').length;
+      const raw = old.replace(/[^0-9]/g, '');
+      if (!raw) { input.value = ''; return; }
+      const formatted = parseInt(raw, 10).toLocaleString('ko-KR');
+      input.value = formatted;
+      let digits = 0, newPos = formatted.length;
+      for (let i = 0; i < formatted.length; i++) {
+        if (formatted[i] !== ',') digits++;
+        if (digits === rawBefore) { newPos = i + 1; break; }
+      }
+      input.setSelectionRange(newPos, newPos);
+    }
+
+    function animatePop(el) {
+      el.classList.remove('pop');
+      void el.offsetWidth;
+      el.classList.add('pop');
+    }
+
+    /* ── Input binding helper ── */
+
+    function bindInputs(ids, prefix, onCalc) {
+      ids.forEach((id, i) => {
+        const el = document.getElementById(id);
+        const saved = localStorage.getItem('sc_' + id);
+        if (saved) el.value = parseInt(saved, 10).toLocaleString('ko-KR');
+
+        el.addEventListener('focus', function () {
+          setTimeout(() => this.select(), 10);
+        });
+
+        el.addEventListener('input', function () {
+          applyFormat(this);
+          const raw = this.value.replace(/,/g, '');
+          if (raw) localStorage.setItem('sc_' + id, raw);
+          else localStorage.removeItem('sc_' + id);
+          onCalc();
+        });
+
+        el.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter') {
+            const next = document.getElementById(ids[i + 1]);
+            if (next) next.focus(); else this.blur();
+          }
+        });
+      });
+    }
+
+    /* ── Tab 1: 매집비율 ── */
+
+    const A_FIELDS = ['a_avgPrice', 'a_floatShares', 'a_totalAmount'];
+
+    function calcAccum() {
+      const avgPrice    = parseNum(document.getElementById('a_avgPrice').value);
+      const floatShares = parseNum(document.getElementById('a_floatShares').value);
+      const totalAmount = parseNum(document.getElementById('a_totalAmount').value);
+
+      const mainValue   = document.getElementById('a_mainValue');
+      const mainSub     = document.getElementById('a_mainSub');
+      const floatCapEl  = document.getElementById('a_floatCap');
+      const floatCapSub = document.getElementById('a_floatCapSub');
+      const ratioEl     = document.getElementById('a_accumRatio');
+
+      if (!avgPrice || !floatShares || !totalAmount) {
+        mainValue.textContent = '—'; mainValue.className = 'result-main-value empty';
+        mainSub.textContent = '';
+        floatCapEl.textContent = '—'; floatCapEl.className = 'result-value empty';
+        floatCapSub.textContent = '';
+        ratioEl.textContent = '—';   ratioEl.className = 'result-value empty';
+        return;
+      }
+
+      const floatCap       = avgPrice * floatShares;
+      const ratio          = (totalAmount * 1e8 / floatCap) * 100;
+      const expectedIncrease = ratio * 10;
+
+      const newText = '+' + expectedIncrease.toFixed(1) + '%';
+      if (mainValue.textContent !== newText) animatePop(mainValue);
+      mainValue.textContent = newText;
+      mainValue.className   = 'result-main-value';
+      mainSub.textContent   = '매집비율 ' + ratio.toFixed(2) + '% × 10';
+
+      floatCapEl.className   = 'result-value';
+      floatCapEl.textContent = toKorean(floatCap);
+      floatCapSub.textContent = toComma(floatCap) + '원';
+
+      ratioEl.className   = 'result-value';
+      ratioEl.textContent = ratio.toFixed(4) + '%';
+    }
+
+    bindInputs(A_FIELDS, 'a', calcAccum);
+
+    document.getElementById('a_resetBtn').addEventListener('click', () => {
+      A_FIELDS.forEach(id => {
+        document.getElementById(id).value = '';
+        localStorage.removeItem('sc_' + id);
+      });
+      calcAccum();
+      document.getElementById('a_avgPrice').focus();
+    });
+
+    calcAccum();
+
+    /* ── Tab 2: 수급맥점 ── */
+
+    const S_FIELDS = ['s_floatShares', 's_closePrice'];
+    let supplyPeriod = localStorage.getItem('sc_supply_period') || 'daily';
+
+    function updatePeriodUI() {
+      document.querySelectorAll('.period-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.period === supplyPeriod);
+      });
+      const card = document.getElementById('s_mainCard');
+      card.className = 'result-main ' + (supplyPeriod === 'daily' ? 'green' : 'blue');
+    }
+
+    document.querySelectorAll('.period-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        supplyPeriod = btn.dataset.period;
+        localStorage.setItem('sc_supply_period', supplyPeriod);
+        updatePeriodUI();
+        calcSupply();
+      });
+    });
+
+    function calcSupply() {
+      const floatShares = parseNum(document.getElementById('s_floatShares').value);
+      const closePrice  = parseNum(document.getElementById('s_closePrice').value);
+
+      const mainLabel   = document.getElementById('s_mainLabel');
+      const mainValue   = document.getElementById('s_mainValue');
+      const mainSub     = document.getElementById('s_mainSub');
+      const floatCapEl  = document.getElementById('s_floatCap');
+      const floatCapSub = document.getElementById('s_floatCapSub');
+
+      if (!floatShares || !closePrice) {
+        mainValue.textContent = '—'; mainValue.className = 'result-main-value empty';
+        mainSub.textContent = '';
+        floatCapEl.textContent = '—'; floatCapEl.className = 'result-value empty';
+        floatCapSub.textContent = '';
+        return;
+      }
+
+      const floatCap = floatShares * closePrice;
+      const isDaily  = supplyPeriod === 'daily';
+      const result   = floatCap * (isDaily ? 0.003 : 0.01);
+
+      mainLabel.textContent = isDaily ? '일봉기준 수급맥점' : '주봉기준 수급맥점';
+
+      const newText = toEok(result) + '억원';
+      if (mainValue.textContent !== newText) animatePop(mainValue);
+      mainValue.textContent = newText;
+      mainValue.className   = 'result-main-value';
+      mainSub.textContent   = '시가총액 × ' + (isDaily ? '0.3%' : '1%');
+
+      floatCapEl.className    = 'result-value';
+      floatCapEl.textContent  = toKorean(floatCap);
+      floatCapSub.textContent = toComma(floatCap) + '원';
+    }
+
+    bindInputs(S_FIELDS, 's', calcSupply);
+
+    document.getElementById('s_resetBtn').addEventListener('click', () => {
+      S_FIELDS.forEach(id => {
+        document.getElementById(id).value = '';
+        localStorage.removeItem('sc_' + id);
+      });
+      calcSupply();
+      document.getElementById('s_floatShares').focus();
+    });
+
+    updatePeriodUI();
+    calcSupply();
+
+    /* ── Tab 3: 이벤트변동성 ── */
+
+    const E_FIELDS = ['e_closePrice'];
+    const EVENTS = {
+      domestic: { label: '국내이벤트',  rate: 0.3 },
+      global:   { label: '글로벌이벤트', rate: 1.0 },
+      politics: { label: '정치테마주',   rate: 3.0 },
+      election: { label: '대선정책주',   rate: 5.0 },
+    };
+
+    let eventType = localStorage.getItem('sc_event_type') || 'domestic';
+
+    function updateEventUI() {
+      document.querySelectorAll('.event-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.event === eventType);
+      });
+    }
+
+    document.querySelectorAll('.event-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        eventType = btn.dataset.event;
+        localStorage.setItem('sc_event_type', eventType);
+        updateEventUI();
+        calcEvent();
+      });
+    });
+
+    function calcEvent() {
+      const closePrice = parseNum(document.getElementById('e_closePrice').value);
+      const mainValue  = document.getElementById('e_mainValue');
+      const mainSub    = document.getElementById('e_mainSub');
+
+      if (!closePrice) {
+        mainValue.textContent = '—'; mainValue.className = 'result-main-value price empty';
+        mainSub.textContent = '';
+        return;
+      }
+
+      const { label, rate } = EVENTS[eventType];
+      const increase = closePrice * rate;
+      const expected = closePrice + increase;
+      const pct      = rate * 100;
+
+      const newText = toComma(expected) + '원';
+      if (mainValue.textContent !== newText) animatePop(mainValue);
+      mainValue.textContent = newText;
+      mainValue.className   = 'result-main-value price';
+      mainSub.textContent   = toComma(closePrice) + '원 × ' + (1 + rate) + ' (+' + pct + '%)';
+    }
+
+    bindInputs(E_FIELDS, 'e', calcEvent);
+
+    document.getElementById('e_resetBtn').addEventListener('click', () => {
+      E_FIELDS.forEach(id => {
+        document.getElementById(id).value = '';
+        localStorage.removeItem('sc_' + id);
+      });
+      calcEvent();
+      document.getElementById('e_closePrice').focus();
+    });
+
+    updateEventUI();
+    calcEvent();
+
+    /* ── Tab 4: 최소거래량찾기 ── */
+
+    const V_FIELDS = ['v_maxVolume'];
+
+    function fmtVolume(n) {
+      if (n >= 1000) return Math.round(n).toLocaleString('ko-KR') + '만주';
+      if (n % 1 === 0) return n.toLocaleString('ko-KR') + '만주';
+      return n.toFixed(1) + '만주';
+    }
+
+    function calcVolume() {
+      const maxVolume = parseNum(document.getElementById('v_maxVolume').value);
+      const mainValue = document.getElementById('v_mainValue');
+      const mainSub   = document.getElementById('v_mainSub');
+
+      if (!maxVolume) {
+        mainValue.textContent = '—'; mainValue.className = 'result-main-value empty';
+        mainSub.textContent = '';
+        return;
+      }
+
+      const minVolume = maxVolume * 0.1;
+
+      const newText = fmtVolume(minVolume);
+      if (mainValue.textContent !== newText) animatePop(mainValue);
+      mainValue.textContent = newText;
+      mainValue.className   = 'result-main-value';
+      mainSub.textContent   = fmtVolume(maxVolume) + ' × 10%';
+    }
+
+    bindInputs(V_FIELDS, 'v', calcVolume);
+
+    document.getElementById('v_resetBtn').addEventListener('click', () => {
+      V_FIELDS.forEach(id => {
+        document.getElementById(id).value = '';
+        localStorage.removeItem('sc_' + id);
+      });
+      calcVolume();
+      document.getElementById('v_maxVolume').focus();
+    });
+
+    calcVolume();
+
+    /* ── Tab switching ── */
+
+    const tabBtns     = document.querySelectorAll('.tab');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    tabBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const target = btn.dataset.tab;
+        tabBtns.forEach(b => b.classList.toggle('active', b === btn));
+        tabContents.forEach(s => s.classList.toggle('active', s.id === 'tab-' + target));
+        localStorage.setItem('sc_active_tab', target);
+      });
+    });
+
+    // Restore last active tab
+    const savedTab = localStorage.getItem('sc_active_tab');
+    if (savedTab) {
+      const btn = document.querySelector(`[data-tab="${savedTab}"]`);
+      if (btn) btn.click();
+    }
+
+    /* ── PWA ── */
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').catch(() => {});
+    }
+  </script>
+</body>
+</html>

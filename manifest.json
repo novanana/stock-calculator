@@ -1,7 +1,7 @@
 {
-  "name": "주식 계산기",
-  "short_name": "주식계산기",
-  "description": "매집 분석 주식 계산기",
+  "name": "stock-calculator",
+  "short_name": "stock-calculator",
+  "description": "stock-calculator",
   "start_url": "./index.html",
   "display": "standalone",
   "orientation": "portrait",

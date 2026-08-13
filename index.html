@@ -62,23 +62,27 @@
     /* ── Tab Bar ── */
     .tab-bar {
       display: flex;
+      flex-direction: column;
+      gap: 4px;
       margin: 0 16px 4px;
       background: var(--surface);
       border-radius: 12px;
       padding: 4px;
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-      scrollbar-width: none;
     }
 
-    .tab-bar::-webkit-scrollbar { display: none; }
+    .tab-row {
+      display: flex;
+      gap: 4px;
+    }
 
     .tab {
-      flex-shrink: 0;
-      padding: 8px 14px;
+      flex: 1;
+      min-width: 0;
+      padding: 8px 4px;
       border-radius: 8px;
       border: none;
       font-size: 13px;
+      line-height: 1.25;
       font-weight: 500;
       font-family: inherit;
       cursor: pointer;
@@ -86,7 +90,8 @@
       color: var(--text3);
       transition: background 0.18s, color 0.18s;
       letter-spacing: -0.2px;
-      white-space: nowrap;
+      white-space: normal;
+      text-align: center;
     }
 
     .tab.active {
@@ -685,14 +690,20 @@
   </header>
 
   <div class="tab-bar">
-    <button class="tab active" data-tab="accum">매집비율</button>
-    <button class="tab" data-tab="supply">수급맥점</button>
-    <button class="tab" data-tab="event">이벤트변동성</button>
-    <button class="tab" data-tab="volume">최소거래량</button>
-    <button class="tab" data-tab="pullback">눌림목매매</button>
-    <button class="tab" data-tab="sell">매도타이밍</button>
-    <button class="tab" data-tab="finance">재무제표</button>
-    <button class="tab" data-tab="indicators">3가지지표</button>
+    <div class="tab-row">
+      <button class="tab active" data-tab="accum">매집비율</button>
+      <button class="tab" data-tab="supply">수급맥점</button>
+      <button class="tab" data-tab="event">이벤트변동성</button>
+      <button class="tab" data-tab="volume">최소거래량</button>
+    </div>
+    <div class="tab-row">
+      <button class="tab" data-tab="pullback">눌림목매매</button>
+      <button class="tab" data-tab="sell">매도타이밍</button>
+    </div>
+    <div class="tab-row">
+      <button class="tab" data-tab="finance">재무제표입력</button>
+      <button class="tab" data-tab="indicators">가치평가</button>
+    </div>
   </div>
 
   <main>
@@ -1098,7 +1109,7 @@
         <div class="compare-scroll" id="i_compareWrap"></div>
       </div>
 
-      <div class="hint-card" id="i_hint">먼저 '재무제표' 탭에서 당해연도·직전연도 재무 데이터를 입력하면 아래 지표가 자동으로 계산됩니다.</div>
+      <div class="hint-card" id="i_hint">먼저 '재무제표입력' 탭에서 당해연도·직전연도 재무 데이터를 입력하면 아래 지표가 자동으로 계산됩니다.</div>
 
       <div class="section-label">전체 개요 <span id="i_activeCompanyLabel" class="section-label-sub"></span></div>
       <div class="card">

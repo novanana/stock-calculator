@@ -503,6 +503,143 @@
       text-align: right;
     }
 
+    .section-label-sub {
+      text-transform: none;
+      letter-spacing: 0;
+      color: var(--green);
+      font-weight: 600;
+    }
+
+    /* ── Company selector (재무제표 / 3가지지표 공용) ── */
+    .company-bar {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      padding-bottom: 2px;
+    }
+
+    .company-bar::-webkit-scrollbar { display: none; }
+
+    .company-chip {
+      flex-shrink: 0;
+      max-width: 120px;
+      padding: 9px 14px;
+      border-radius: 10px;
+      border: 1.5px solid var(--border);
+      background: var(--surface);
+      color: var(--text3);
+      font-size: 13px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      transition: border-color 0.18s, background 0.18s, color 0.18s;
+    }
+
+    .company-chip.active {
+      border-color: var(--green);
+      background: var(--green-dim);
+      color: var(--text);
+    }
+
+    .company-chip-add {
+      color: var(--green);
+      border-style: dashed;
+      border-color: var(--green-border);
+      font-weight: 700;
+      max-width: none;
+    }
+
+    .company-name-row {
+      display: flex;
+      gap: 8px;
+      margin: 10px 0 16px;
+    }
+
+    .company-name-input {
+      flex: 1;
+      min-width: 0;
+      background: var(--surface);
+      border: none;
+      border-radius: 12px;
+      padding: 11px 14px;
+      color: var(--text);
+      font-size: 14px;
+      font-weight: 600;
+      font-family: inherit;
+      outline: none;
+      caret-color: var(--green);
+    }
+
+    .company-remove-btn {
+      flex-shrink: 0;
+      padding: 11px 14px;
+      border-radius: 12px;
+      border: none;
+      background: var(--red-dim);
+      color: var(--red);
+      font-size: 13px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    .company-remove-btn:disabled {
+      opacity: 0.35;
+      cursor: default;
+    }
+
+    /* ── Comparison table (3가지지표 종합비교) ── */
+    .compare-card {
+      background: var(--surface);
+      border-radius: 16px;
+      padding: 14px 16px 16px;
+      margin: 14px 0 4px;
+    }
+
+    .compare-scroll {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .compare-table {
+      border-collapse: collapse;
+      width: 100%;
+      font-size: 13px;
+    }
+
+    .compare-table th, .compare-table td {
+      padding: 9px 12px;
+      text-align: right;
+      white-space: nowrap;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .compare-table tr:last-child td { border-bottom: none; }
+
+    .compare-table th:first-child, .compare-table td:first-child {
+      text-align: left;
+      position: sticky;
+      left: 0;
+      background: var(--surface);
+    }
+
+    .compare-table thead th {
+      color: var(--text3);
+      font-weight: 600;
+      font-size: 12px;
+    }
+
+    .compare-table td.compare-label { color: var(--text3); }
+
+    .compare-table th.active-col, .compare-table td.active-col { color: var(--green); }
+
     .hint-card {
       background: var(--blue-dim);
       border: 1px solid var(--blue-border);
@@ -817,6 +954,14 @@
     <!-- ───────── Tab 7: 재무제표 ───────── -->
     <section id="tab-finance" class="tab-content">
 
+      <div class="section-label">기업 선택 (최대 5개)</div>
+      <div class="company-bar" id="fin_companyBar"></div>
+      <div class="company-name-row">
+        <input type="text" id="fin_companyNameInput" class="company-name-input"
+               placeholder="기업명" maxlength="20" autocomplete="off" autocorrect="off" spellcheck="false">
+        <button type="button" class="company-remove-btn" id="fin_removeCompanyBtn">삭제</button>
+      </div>
+
       <div class="fin-unit-note">단위: 억원 · 재무제표 시트에 있는 값을 그대로 입력하세요</div>
 
       <div class="section-label">재무상태표</div>
@@ -945,9 +1090,17 @@
     <!-- ───────── Tab 8: 3가지지표 ───────── -->
     <section id="tab-indicators" class="tab-content">
 
+      <div class="section-label">기업 선택</div>
+      <div class="company-bar" id="ind_companyBar"></div>
+
+      <div class="compare-card" id="i_compareCard" style="display:none;">
+        <div class="section-label" style="margin-top:0;">종합비교</div>
+        <div class="compare-scroll" id="i_compareWrap"></div>
+      </div>
+
       <div class="hint-card" id="i_hint">먼저 '재무제표' 탭에서 당해연도·직전연도 재무 데이터를 입력하면 아래 지표가 자동으로 계산됩니다.</div>
 
-      <div class="section-label">전체 개요</div>
+      <div class="section-label">전체 개요 <span id="i_activeCompanyLabel" class="section-label-sub"></span></div>
       <div class="card">
         <div class="res-row3 res-row3-header">
           <span class="res-label3"></span>
@@ -1404,6 +1557,105 @@
     ];
 
     const ALL_FIN_INPUT_IDS = FIN_IDS.flatMap(id => ['f_' + id + '_cur', 'f_' + id + '_prev']);
+    const MAX_COMPANIES = 5;
+    const COMPANY_LETTERS = ['A', 'B', 'C', 'D', 'E'];
+
+    function defaultCompanyName(n) { return '기업' + COMPANY_LETTERS[n - 1]; }
+
+    function escapeHtml(str) {
+      return str.replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+    }
+
+    let finCompanyCount  = Math.min(MAX_COMPANIES, Math.max(1, parseInt(localStorage.getItem('sc_fin_count'), 10) || 1));
+    let finActiveCompany = Math.min(finCompanyCount, Math.max(1, parseInt(localStorage.getItem('sc_fin_active'), 10) || 1));
+
+    function companyName(n) {
+      return localStorage.getItem('sc_fin_name_c' + n) || defaultCompanyName(n);
+    }
+
+    function finKey(id, year, company) {
+      return 'sc_f_' + id + '_c' + (company || finActiveCompany) + '_' + year;
+    }
+
+    function renderCompanyBar(containerId) {
+      const el = document.getElementById(containerId);
+      if (!el) return;
+      let html = '';
+      for (let i = 1; i <= finCompanyCount; i++) {
+        html += `<button type="button" class="company-chip${i === finActiveCompany ? ' active' : ''}" data-company="${i}">${escapeHtml(companyName(i))}</button>`;
+      }
+      if (finCompanyCount < MAX_COMPANIES) {
+        html += `<button type="button" class="company-chip company-chip-add" data-add="1">+</button>`;
+      }
+      el.innerHTML = html;
+      el.querySelectorAll('.company-chip[data-company]').forEach(btn => {
+        btn.addEventListener('click', () => setActiveCompany(parseInt(btn.dataset.company, 10)));
+      });
+      const addBtn = el.querySelector('[data-add]');
+      if (addBtn) addBtn.addEventListener('click', addCompany);
+    }
+
+    function renderAllCompanyBars() {
+      renderCompanyBar('fin_companyBar');
+      renderCompanyBar('ind_companyBar');
+    }
+
+    function updateCompanyNameInput() {
+      const nameEl = document.getElementById('fin_companyNameInput');
+      if (nameEl) nameEl.value = companyName(finActiveCompany);
+      const removeBtn = document.getElementById('fin_removeCompanyBtn');
+      if (removeBtn) removeBtn.disabled = finCompanyCount <= 1;
+    }
+
+    function setActiveCompany(n) {
+      finActiveCompany = n;
+      localStorage.setItem('sc_fin_active', n);
+      renderAllCompanyBars();
+      updateCompanyNameInput();
+      loadFinForm();
+      calcIndicators();
+    }
+
+    function addCompany() {
+      if (finCompanyCount >= MAX_COMPANIES) return;
+      finCompanyCount++;
+      localStorage.setItem('sc_fin_count', finCompanyCount);
+      setActiveCompany(finCompanyCount);
+    }
+
+    function removeCompany() {
+      if (finCompanyCount <= 1) return;
+      const removed = finActiveCompany;
+      for (let k = removed; k < finCompanyCount; k++) {
+        FIN_IDS.forEach(id => {
+          ['cur', 'prev'].forEach(year => {
+            const v = localStorage.getItem(finKey(id, year, k + 1));
+            if (v !== null) localStorage.setItem(finKey(id, year, k), v);
+            else localStorage.removeItem(finKey(id, year, k));
+          });
+        });
+        const nv = localStorage.getItem('sc_fin_name_c' + (k + 1));
+        if (nv !== null) localStorage.setItem('sc_fin_name_c' + k, nv);
+        else localStorage.removeItem('sc_fin_name_c' + k);
+      }
+      FIN_IDS.forEach(id => {
+        ['cur', 'prev'].forEach(year => localStorage.removeItem(finKey(id, year, finCompanyCount)));
+      });
+      localStorage.removeItem('sc_fin_name_c' + finCompanyCount);
+      finCompanyCount--;
+      localStorage.setItem('sc_fin_count', finCompanyCount);
+      setActiveCompany(Math.min(removed, finCompanyCount));
+    }
+
+    function loadFinForm() {
+      FIN_IDS.forEach(id => {
+        ['cur', 'prev'].forEach(year => {
+          const el = document.getElementById('f_' + id + '_' + year);
+          const saved = localStorage.getItem(finKey(id, year));
+          el.value = saved ? formatSignedDisplay(saved) : '';
+        });
+      });
+    }
 
     // Allows negative values (e.g. 당기순이익 손실) and one decimal point.
     function sanitizeSigned(str) {
@@ -1434,11 +1686,9 @@
         ['cur', 'prev'].forEach(year => {
           const elId = 'f_' + id + '_' + year;
           const el = document.getElementById(elId);
-          const saved = localStorage.getItem('sc_' + elId);
-          if (saved) el.value = formatSignedDisplay(saved);
 
           el.addEventListener('focus', function () {
-            const raw = localStorage.getItem('sc_' + elId);
+            const raw = localStorage.getItem(finKey(id, year));
             if (raw) this.value = raw;
             const self = this;
             setTimeout(() => { if (document.activeElement === self) self.select(); }, 10);
@@ -1446,13 +1696,14 @@
 
           el.addEventListener('input', function () {
             this.value = sanitizeSigned(this.value);
-            if (this.value && this.value !== '-') localStorage.setItem('sc_' + elId, this.value);
-            else localStorage.removeItem('sc_' + elId);
+            const key = finKey(id, year);
+            if (this.value && this.value !== '-') localStorage.setItem(key, this.value);
+            else localStorage.removeItem(key);
             calcIndicators();
           });
 
           el.addEventListener('blur', function () {
-            const raw = localStorage.getItem('sc_' + elId);
+            const raw = localStorage.getItem(finKey(id, year));
             this.value = raw ? formatSignedDisplay(raw) : '';
           });
 
@@ -1464,16 +1715,19 @@
           });
         });
       });
+      loadFinForm();
     }
 
-    function getFin() {
+    function getFinForCompany(n) {
       const cur = {}, prev = {};
       FIN_IDS.forEach(id => {
-        cur[id]  = parseSigned(localStorage.getItem('sc_f_' + id + '_cur'));
-        prev[id] = parseSigned(localStorage.getItem('sc_f_' + id + '_prev'));
+        cur[id]  = parseSigned(localStorage.getItem(finKey(id, 'cur', n)));
+        prev[id] = parseSigned(localStorage.getItem(finKey(id, 'prev', n)));
       });
       return { cur, prev };
     }
+
+    function getFin() { return getFinForCompany(finActiveCompany); }
 
     function div(a, b) {
       return (a === null || b === null || b === 0) ? null : a / b;
@@ -1497,11 +1751,48 @@
     function fmtTimes(n){ return n === null ? null : n.toFixed(2) + '회'; }
     function fmtDays(n) { return n === null ? null : n.toFixed(1) + '일'; }
     function fmtMonths(n){ return n === null ? null : n.toFixed(1) + '개월'; }
+    function sub(a, b) { return (a === null || b === null) ? null : a - b; }
+    function mul100(n) { return n === null ? null : n * 100; }
+
+    const COMPARE_ROWS = [
+      { label: '총자산',   calc: f => fmtEok(f.totalAssets) },
+      { label: '매출',     calc: f => fmtEok(f.revenue) },
+      { label: '영업이익', calc: f => fmtEok(f.operatingProfit) },
+      { label: '당기순이익', calc: f => fmtEok(f.netIncome) },
+      { label: '부채비율', calc: f => fmtPct(mul100(div(f.totalLiabilities, f.equity))) },
+      { label: '자기자본이익율', calc: f => fmtPct(mul100(div(f.netIncome, f.equity))) },
+    ];
+
+    function renderComparisonTable() {
+      const card = document.getElementById('i_compareCard');
+      const wrap = document.getElementById('i_compareWrap');
+      if (!card || !wrap) return;
+      if (finCompanyCount < 2) { card.style.display = 'none'; return; }
+      card.style.display = '';
+
+      let html = '<table class="compare-table"><thead><tr><th></th>';
+      for (let i = 1; i <= finCompanyCount; i++) {
+        html += `<th class="${i === finActiveCompany ? 'active-col' : ''}">${escapeHtml(companyName(i))}</th>`;
+      }
+      html += '</tr></thead><tbody>';
+      COMPARE_ROWS.forEach(row => {
+        html += `<tr><td class="compare-label">${row.label}</td>`;
+        for (let i = 1; i <= finCompanyCount; i++) {
+          const val = row.calc(getFinForCompany(i).cur);
+          html += `<td class="${i === finActiveCompany ? 'active-col' : ''}">${val === null ? '—' : val}</td>`;
+        }
+        html += '</tr>';
+      });
+      html += '</tbody></table>';
+      wrap.innerHTML = html;
+    }
 
     function calcIndicators() {
       const { cur, prev } = getFin();
       const hasAny = FIN_IDS.some(id => cur[id] !== null || prev[id] !== null);
       document.getElementById('i_hint').style.display = hasAny ? 'none' : 'block';
+      const activeLabel = document.getElementById('i_activeCompanyLabel');
+      if (activeLabel) activeLabel.textContent = '· ' + companyName(finActiveCompany);
 
       ['totalAssets', 'totalLiabilities', 'equity', 'revenue', 'operatingProfit', 'netIncome'].forEach(id => {
         setRes('r_' + id + '_cur',  fmtEok(cur[id]));
@@ -1535,20 +1826,44 @@
       // 매출성장율: 당해연도만 계산 (전전연도 데이터가 없어 직전연도는 계산 불가)
       setRes('r_revenueGrowth_cur', fmtPct(mul100(div(sub(cur.revenue, prev.revenue), prev.revenue))));
       setRes('r_revenueGrowth_prev', null);
+
+      renderComparisonTable();
     }
 
-    function sub(a, b) { return (a === null || b === null) ? null : a - b; }
-    function mul100(n) { return n === null ? null : n * 100; }
-
+    renderAllCompanyBars();
+    updateCompanyNameInput();
     bindFinInputs();
     calcIndicators();
+
+    document.getElementById('fin_companyNameInput').addEventListener('input', function () {
+      const key = 'sc_fin_name_c' + finActiveCompany;
+      if (this.value.trim()) localStorage.setItem(key, this.value);
+      else localStorage.removeItem(key);
+      renderAllCompanyBars();
+      renderComparisonTable();
+    });
+
+    document.getElementById('fin_companyNameInput').addEventListener('blur', function () {
+      if (!this.value.trim()) {
+        localStorage.removeItem('sc_fin_name_c' + finActiveCompany);
+        this.value = defaultCompanyName(finActiveCompany);
+        renderAllCompanyBars();
+        renderComparisonTable();
+      }
+    });
+
+    document.getElementById('fin_removeCompanyBtn').addEventListener('click', () => {
+      if (finCompanyCount <= 1) return;
+      if (!confirm(companyName(finActiveCompany) + ' 데이터를 삭제할까요?')) return;
+      removeCompany();
+    });
 
     document.getElementById('f_resetBtn').addEventListener('click', () => {
       FIN_IDS.forEach(id => {
         ['cur', 'prev'].forEach(year => {
           const elId = 'f_' + id + '_' + year;
           document.getElementById(elId).value = '';
-          localStorage.removeItem('sc_' + elId);
+          localStorage.removeItem(finKey(id, year));
         });
       });
       calcIndicators();

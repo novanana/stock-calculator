@@ -388,6 +388,132 @@
       margin-top: 1px;
     }
 
+    /* ── Finance input rows (재무제표) ── */
+    .fin-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border);
+      gap: 10px;
+    }
+
+    .fin-row:last-child { border-bottom: none; }
+
+    .fin-row-header { padding: 8px 16px 6px; }
+
+    .fin-label {
+      font-size: 14px;
+      color: var(--text);
+      flex: 1;
+    }
+
+    .fin-col-label {
+      font-size: 11px;
+      color: var(--text3);
+      width: 78px;
+      text-align: right;
+    }
+
+    .fin-inputs {
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .fin-input {
+      width: 78px;
+      background: var(--surface2);
+      border: none;
+      border-radius: 8px;
+      padding: 8px 8px;
+      color: var(--text);
+      font-size: 14px;
+      font-weight: 600;
+      font-family: inherit;
+      text-align: right;
+      outline: none;
+      caret-color: var(--green);
+    }
+
+    .fin-input::placeholder {
+      color: var(--border);
+      font-weight: 400;
+    }
+
+    .fin-unit-note {
+      font-size: 12px;
+      color: var(--text3);
+      padding: 0 4px;
+      margin: -2px 0 14px;
+    }
+
+    .fin-check {
+      font-size: 12px;
+      padding: 10px 16px;
+      color: var(--text3);
+    }
+
+    .fin-check.ok { color: var(--green); }
+    .fin-check.bad { color: var(--red); }
+
+    /* ── Indicator result rows (3가지지표) ── */
+    .res-row3 {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      gap: 8px;
+    }
+
+    .res-row3:last-child { border-bottom: none; }
+
+    .res-row3-header { padding: 8px 16px 6px; }
+
+    .res-label3 {
+      font-size: 14px;
+      color: var(--text3);
+      flex: 1;
+    }
+
+    .res-value3-wrap {
+      display: flex;
+      gap: 14px;
+      flex-shrink: 0;
+    }
+
+    .res-value3 {
+      width: 72px;
+      text-align: right;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .res-value3.empty {
+      color: var(--border);
+      font-weight: 400;
+    }
+
+    .res-col-header {
+      font-size: 11px;
+      color: var(--text3);
+      width: 72px;
+      text-align: right;
+    }
+
+    .hint-card {
+      background: var(--blue-dim);
+      border: 1px solid var(--blue-border);
+      border-radius: 14px;
+      padding: 14px 16px;
+      font-size: 13px;
+      color: var(--blue);
+      line-height: 1.5;
+      margin-bottom: 4px;
+    }
+
     /* ── Reset button ── */
     .btn-reset {
       width: 100%;
@@ -428,6 +554,8 @@
     <button class="tab" data-tab="volume">최소거래량</button>
     <button class="tab" data-tab="pullback">눌림목매매</button>
     <button class="tab" data-tab="sell">매도타이밍</button>
+    <button class="tab" data-tab="finance">재무제표</button>
+    <button class="tab" data-tab="indicators">3가지지표</button>
   </div>
 
   <main>
@@ -681,6 +809,273 @@
             <div class="info-title">갭하락을 메꾸는 자리</div>
             <div class="info-desc">갭을 메꾸는 단기 고점자리</div>
           </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ───────── Tab 7: 재무제표 ───────── -->
+    <section id="tab-finance" class="tab-content">
+
+      <div class="fin-unit-note">단위: 억원 · 재무제표 시트에 있는 값을 그대로 입력하세요</div>
+
+      <div class="section-label">재무상태표</div>
+      <div class="card">
+        <div class="fin-row fin-row-header">
+          <span class="fin-label"></span>
+          <div class="fin-inputs">
+            <span class="fin-col-label">당해연도</span>
+            <span class="fin-col-label">직전연도</span>
+          </div>
+        </div>
+        <div class="fin-row">
+          <span class="fin-label">유동자산</span>
+          <div class="fin-inputs">
+            <input type="text" inputmode="decimal" class="fin-input" id="f_curAssets_cur" placeholder="0" autocomplete="off" autocorrect="off" spellcheck="false">
+            <input type="text" inputmode="decimal" class="fin-input" id="f_curAssets_prev" placeholder="0" autocomplete="off" autocorrect="off" spellcheck="false">
+          </div>
+        </div>
+        <div class="fin-row">
+          <span class="fin-label">현금성자산</span>
+          <div class="fin-inputs">
+            <input type="text" inputmode="decimal" class="fin-input" id="f_cash_cur" placeholder="0" autocomplete="off" autocorrect="off" spellcheck="false">
+            <input type="text" inputmode="decimal" class="fin-input" id="f_cash_prev" placeholder="0" autocomplete="off" autocorrect="off" spellcheck="false">
+          </div>
+        </div>
+        <div class="fin-row">
+          <span class="fin-label">매출채권</span>
+          <div class="fin-inputs">
+            <input type="text" inputmode="decimal" class="fin-input" id="f_receivables_cur" placeholder="0" autocomplete="off" autocorrect="off" spellcheck="false">
+            <input type="text" inputmode="decimal" class="fin-input" id="f_receivables_prev" placeholder="0" autocomplete="off" autocorrect="off" spellcheck="false">
+          </div>
+        </div>
+        <div class="fin-row">
+          <span class="fin-label">재고자산</span>
+          <div class="fin-inputs">
+            <input type="text" inputmode="decimal" class="fin-input" id="f_inventory_cur" placeholder="0" autocomplete="off" autocorrect="off" spellcheck="false">
+            <input type="text" inputmode="decimal" class="fin-input" id="f_inventory_prev" placeholder="0" autocomplete="off" autocorrect="off" spellcheck="false">
+          </div>
+        </div>
+        <div class="fin-row">
+          <span class="fin-label">총자산</span>
+          <div class="fin-inputs">
+            <input type="text" inputmode="decimal" class="fin-input" id="f_totalAssets_cur" placeholder="0" autocomplete="off" autocorrect="off" spellcheck="false">
+            <input type="text" inputmode="decimal" class="fin-input" id="f_totalAssets_prev" placeholder="0" autocomplete="off" autocorrect="off" spellcheck="false">
+          </div>
+        </div>
+        <div class="fin-row">
+          <span class="fin-label">유동부채</span>
+          <div class="fin-inputs">
+            <input type="text" inputmode="decimal" class="fin-input" id="f_curLiabilities_cur" placeholder="0" autocomplete="off" autocorrect="off" spellcheck="false">
+            <input type="text" inputmode="decimal" class="fin-input" id="f_curLiabilities_prev" placeholder="0" autocomplete="off" autocorrect="off" spellcheck="false">
+          </div>
+        </div>
+        <div class="fin-row">
+          <span class="fin-label">총부채</span>
+          <div class="fin-inputs">
+            <input type="text" inputmode="decimal" class="fin-input" id="f_totalLiabilities_cur" placeholder="0" autocomplete="off" autocorrect="off" spellcheck="false">
+            <input type="text" inputmode="decimal" class="fin-input" id="f_totalLiabilities_prev" placeholder="0" autocomplete="off" autocorrect="off" spellcheck="false">
+          </div>
+        </div>
+        <div class="fin-row">
+          <span class="fin-label">자본</span>
+          <div class="fin-inputs">
+            <input type="text" inputmode="decimal" class="fin-input" id="f_equity_cur" placeholder="0" autocomplete="off" autocorrect="off" spellcheck="false">
+            <input type="text" inputmode="decimal" class="fin-input" id="f_equity_prev" placeholder="0" autocomplete="off" autocorrect="off" spellcheck="false">
+          </div>
+        </div>
+      </div>
+
+      <div class="section-label">손익계산서</div>
+      <div class="card">
+        <div class="fin-row fin-row-header">
+          <span class="fin-label"></span>
+          <div class="fin-inputs">
+            <span class="fin-col-label">당해연도</span>
+            <span class="fin-col-label">직전연도</span>
+          </div>
+        </div>
+        <div class="fin-row">
+          <span class="fin-label">매출</span>
+          <div class="fin-inputs">
+            <input type="text" inputmode="decimal" class="fin-input" id="f_revenue_cur" placeholder="0" autocomplete="off" autocorrect="off" spellcheck="false">
+            <input type="text" inputmode="decimal" class="fin-input" id="f_revenue_prev" placeholder="0" autocomplete="off" autocorrect="off" spellcheck="false">
+          </div>
+        </div>
+        <div class="fin-row">
+          <span class="fin-label">매출원가</span>
+          <div class="fin-inputs">
+            <input type="text" inputmode="decimal" class="fin-input" id="f_cogs_cur" placeholder="0" autocomplete="off" autocorrect="off" spellcheck="false">
+            <input type="text" inputmode="decimal" class="fin-input" id="f_cogs_prev" placeholder="0" autocomplete="off" autocorrect="off" spellcheck="false">
+          </div>
+        </div>
+        <div class="fin-row">
+          <span class="fin-label">매출총이익</span>
+          <div class="fin-inputs">
+            <input type="text" inputmode="decimal" class="fin-input" id="f_grossProfit_cur" placeholder="0" autocomplete="off" autocorrect="off" spellcheck="false">
+            <input type="text" inputmode="decimal" class="fin-input" id="f_grossProfit_prev" placeholder="0" autocomplete="off" autocorrect="off" spellcheck="false">
+          </div>
+        </div>
+        <div class="fin-row">
+          <span class="fin-label">판관비</span>
+          <div class="fin-inputs">
+            <input type="text" inputmode="decimal" class="fin-input" id="f_sga_cur" placeholder="0" autocomplete="off" autocorrect="off" spellcheck="false">
+            <input type="text" inputmode="decimal" class="fin-input" id="f_sga_prev" placeholder="0" autocomplete="off" autocorrect="off" spellcheck="false">
+          </div>
+        </div>
+        <div class="fin-row">
+          <span class="fin-label">영업이익</span>
+          <div class="fin-inputs">
+            <input type="text" inputmode="decimal" class="fin-input" id="f_operatingProfit_cur" placeholder="0" autocomplete="off" autocorrect="off" spellcheck="false">
+            <input type="text" inputmode="decimal" class="fin-input" id="f_operatingProfit_prev" placeholder="0" autocomplete="off" autocorrect="off" spellcheck="false">
+          </div>
+        </div>
+        <div class="fin-row">
+          <span class="fin-label">당기순이익</span>
+          <div class="fin-inputs">
+            <input type="text" inputmode="decimal" class="fin-input" id="f_netIncome_cur" placeholder="0" autocomplete="off" autocorrect="off" spellcheck="false">
+            <input type="text" inputmode="decimal" class="fin-input" id="f_netIncome_prev" placeholder="0" autocomplete="off" autocorrect="off" spellcheck="false">
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-reset" id="f_resetBtn">초기화</button>
+    </section>
+
+    <!-- ───────── Tab 8: 3가지지표 ───────── -->
+    <section id="tab-indicators" class="tab-content">
+
+      <div class="hint-card" id="i_hint">먼저 '재무제표' 탭에서 당해연도·직전연도 재무 데이터를 입력하면 아래 지표가 자동으로 계산됩니다.</div>
+
+      <div class="section-label">전체 개요</div>
+      <div class="card">
+        <div class="res-row3 res-row3-header">
+          <span class="res-label3"></span>
+          <div class="res-value3-wrap">
+            <span class="res-col-header">당해연도</span>
+            <span class="res-col-header">직전연도</span>
+          </div>
+        </div>
+        <div class="res-row3">
+          <span class="res-label3">총자산</span>
+          <div class="res-value3-wrap"><span class="res-value3 empty" id="r_totalAssets_cur">—</span><span class="res-value3 empty" id="r_totalAssets_prev">—</span></div>
+        </div>
+        <div class="res-row3">
+          <span class="res-label3">총부채</span>
+          <div class="res-value3-wrap"><span class="res-value3 empty" id="r_totalLiabilities_cur">—</span><span class="res-value3 empty" id="r_totalLiabilities_prev">—</span></div>
+        </div>
+        <div class="res-row3">
+          <span class="res-label3">자본</span>
+          <div class="res-value3-wrap"><span class="res-value3 empty" id="r_equity_cur">—</span><span class="res-value3 empty" id="r_equity_prev">—</span></div>
+        </div>
+        <div class="res-row3">
+          <span class="res-label3">매출</span>
+          <div class="res-value3-wrap"><span class="res-value3 empty" id="r_revenue_cur">—</span><span class="res-value3 empty" id="r_revenue_prev">—</span></div>
+        </div>
+        <div class="res-row3">
+          <span class="res-label3">영업이익</span>
+          <div class="res-value3-wrap"><span class="res-value3 empty" id="r_operatingProfit_cur">—</span><span class="res-value3 empty" id="r_operatingProfit_prev">—</span></div>
+        </div>
+        <div class="res-row3">
+          <span class="res-label3">당기순이익</span>
+          <div class="res-value3-wrap"><span class="res-value3 empty" id="r_netIncome_cur">—</span><span class="res-value3 empty" id="r_netIncome_prev">—</span></div>
+        </div>
+      </div>
+
+      <div class="section-label">안정성 관점</div>
+      <div class="card">
+        <div class="res-row3 res-row3-header">
+          <span class="res-label3"></span>
+          <div class="res-value3-wrap">
+            <span class="res-col-header">당해연도</span>
+            <span class="res-col-header">직전연도</span>
+          </div>
+        </div>
+        <div class="res-row3">
+          <span class="res-label3">유동비율</span>
+          <div class="res-value3-wrap"><span class="res-value3 empty" id="r_currentRatio_cur">—</span><span class="res-value3 empty" id="r_currentRatio_prev">—</span></div>
+        </div>
+        <div class="res-row3">
+          <span class="res-label3">당좌비율</span>
+          <div class="res-value3-wrap"><span class="res-value3 empty" id="r_quickRatio_cur">—</span><span class="res-value3 empty" id="r_quickRatio_prev">—</span></div>
+        </div>
+        <div class="res-row3">
+          <span class="res-label3">부채비율</span>
+          <div class="res-value3-wrap"><span class="res-value3 empty" id="r_debtRatio_cur">—</span><span class="res-value3 empty" id="r_debtRatio_prev">—</span></div>
+        </div>
+        <div class="res-row3">
+          <span class="res-label3">현금규모</span>
+          <div class="res-value3-wrap"><span class="res-value3 empty" id="r_cashScale_cur">—</span><span class="res-value3 empty" id="r_cashScale_prev">—</span></div>
+        </div>
+      </div>
+
+      <div class="section-label">수익·성장성 관점</div>
+      <div class="card">
+        <div class="res-row3 res-row3-header">
+          <span class="res-label3"></span>
+          <div class="res-value3-wrap">
+            <span class="res-col-header">당해연도</span>
+            <span class="res-col-header">직전연도</span>
+          </div>
+        </div>
+        <div class="res-row3">
+          <span class="res-label3">매출성장율</span>
+          <div class="res-value3-wrap"><span class="res-value3 empty" id="r_revenueGrowth_cur">—</span><span class="res-value3 empty" id="r_revenueGrowth_prev">—</span></div>
+        </div>
+        <div class="res-row3">
+          <span class="res-label3">원가율</span>
+          <div class="res-value3-wrap"><span class="res-value3 empty" id="r_cogsRatio_cur">—</span><span class="res-value3 empty" id="r_cogsRatio_prev">—</span></div>
+        </div>
+        <div class="res-row3">
+          <span class="res-label3">매출총이익율</span>
+          <div class="res-value3-wrap"><span class="res-value3 empty" id="r_grossMargin_cur">—</span><span class="res-value3 empty" id="r_grossMargin_prev">—</span></div>
+        </div>
+        <div class="res-row3">
+          <span class="res-label3">영업이익율</span>
+          <div class="res-value3-wrap"><span class="res-value3 empty" id="r_opMargin_cur">—</span><span class="res-value3 empty" id="r_opMargin_prev">—</span></div>
+        </div>
+        <div class="res-row3">
+          <span class="res-label3">관리비율</span>
+          <div class="res-value3-wrap"><span class="res-value3 empty" id="r_sgaRatio_cur">—</span><span class="res-value3 empty" id="r_sgaRatio_prev">—</span></div>
+        </div>
+        <div class="res-row3">
+          <span class="res-label3">당기순이익율</span>
+          <div class="res-value3-wrap"><span class="res-value3 empty" id="r_netMargin_cur">—</span><span class="res-value3 empty" id="r_netMargin_prev">—</span></div>
+        </div>
+      </div>
+
+      <div class="section-label">효율성 관점</div>
+      <div class="card">
+        <div class="res-row3 res-row3-header">
+          <span class="res-label3"></span>
+          <div class="res-value3-wrap">
+            <span class="res-col-header">당해연도</span>
+            <span class="res-col-header">직전연도</span>
+          </div>
+        </div>
+        <div class="res-row3">
+          <span class="res-label3">총자산이익율</span>
+          <div class="res-value3-wrap"><span class="res-value3 empty" id="r_roa_cur">—</span><span class="res-value3 empty" id="r_roa_prev">—</span></div>
+        </div>
+        <div class="res-row3">
+          <span class="res-label3">자기자본이익율</span>
+          <div class="res-value3-wrap"><span class="res-value3 empty" id="r_roe_cur">—</span><span class="res-value3 empty" id="r_roe_prev">—</span></div>
+        </div>
+        <div class="res-row3">
+          <span class="res-label3">재고자산회전율</span>
+          <div class="res-value3-wrap"><span class="res-value3 empty" id="r_invTurnover_cur">—</span><span class="res-value3 empty" id="r_invTurnover_prev">—</span></div>
+        </div>
+        <div class="res-row3">
+          <span class="res-label3">(재고자산 소진일수)</span>
+          <div class="res-value3-wrap"><span class="res-value3 empty" id="r_invDays_cur">—</span><span class="res-value3 empty" id="r_invDays_prev">—</span></div>
+        </div>
+        <div class="res-row3">
+          <span class="res-label3">매출채권회전율</span>
+          <div class="res-value3-wrap"><span class="res-value3 empty" id="r_arTurnover_cur">—</span><span class="res-value3 empty" id="r_arTurnover_prev">—</span></div>
+        </div>
+        <div class="res-row3">
+          <span class="res-label3">(매출채권 회수일수)</span>
+          <div class="res-value3-wrap"><span class="res-value3 empty" id="r_arDays_cur">—</span><span class="res-value3 empty" id="r_arDays_prev">—</span></div>
         </div>
       </div>
 
@@ -999,6 +1394,166 @@
     });
 
     calcVolume();
+
+    /* ── Tab 7: 재무제표 & Tab 8: 3가지지표 ── */
+
+    const FIN_IDS = [
+      'curAssets', 'cash', 'receivables', 'inventory', 'totalAssets',
+      'curLiabilities', 'totalLiabilities', 'equity',
+      'revenue', 'cogs', 'grossProfit', 'sga', 'operatingProfit', 'netIncome',
+    ];
+
+    const ALL_FIN_INPUT_IDS = FIN_IDS.flatMap(id => ['f_' + id + '_cur', 'f_' + id + '_prev']);
+
+    // Allows negative values (e.g. 당기순이익 손실) and one decimal point.
+    function sanitizeSigned(str) {
+      const neg = str.trim().startsWith('-');
+      let body = str.replace(/[^0-9.]/g, '');
+      const dot = body.indexOf('.');
+      if (dot !== -1) body = body.slice(0, dot + 1) + body.slice(dot + 1).replace(/\./g, '');
+      return (neg ? '-' : '') + body;
+    }
+
+    function formatSignedDisplay(str) {
+      if (!str || str === '-' || str === '.' || str === '-.') return str;
+      const neg = str.startsWith('-');
+      const body = neg ? str.slice(1) : str;
+      const [intPart, decPart] = body.split('.');
+      const formattedInt = intPart ? parseInt(intPart, 10).toLocaleString('ko-KR') : '0';
+      return (neg ? '-' : '') + formattedInt + (decPart !== undefined ? '.' + decPart : '');
+    }
+
+    function parseSigned(str) {
+      if (!str) return null;
+      const n = parseFloat(str);
+      return isFinite(n) ? n : null;
+    }
+
+    function bindFinInputs() {
+      FIN_IDS.forEach(id => {
+        ['cur', 'prev'].forEach(year => {
+          const elId = 'f_' + id + '_' + year;
+          const el = document.getElementById(elId);
+          const saved = localStorage.getItem('sc_' + elId);
+          if (saved) el.value = formatSignedDisplay(saved);
+
+          el.addEventListener('focus', function () {
+            const raw = localStorage.getItem('sc_' + elId);
+            if (raw) this.value = raw;
+            const self = this;
+            setTimeout(() => { if (document.activeElement === self) self.select(); }, 10);
+          });
+
+          el.addEventListener('input', function () {
+            this.value = sanitizeSigned(this.value);
+            if (this.value && this.value !== '-') localStorage.setItem('sc_' + elId, this.value);
+            else localStorage.removeItem('sc_' + elId);
+            calcIndicators();
+          });
+
+          el.addEventListener('blur', function () {
+            const raw = localStorage.getItem('sc_' + elId);
+            this.value = raw ? formatSignedDisplay(raw) : '';
+          });
+
+          el.addEventListener('keydown', function (e) {
+            if (e.key !== 'Enter') return;
+            const idx = ALL_FIN_INPUT_IDS.indexOf(elId);
+            const nextId = ALL_FIN_INPUT_IDS[idx + 1];
+            if (nextId) document.getElementById(nextId).focus(); else this.blur();
+          });
+        });
+      });
+    }
+
+    function getFin() {
+      const cur = {}, prev = {};
+      FIN_IDS.forEach(id => {
+        cur[id]  = parseSigned(localStorage.getItem('sc_f_' + id + '_cur'));
+        prev[id] = parseSigned(localStorage.getItem('sc_f_' + id + '_prev'));
+      });
+      return { cur, prev };
+    }
+
+    function div(a, b) {
+      return (a === null || b === null || b === 0) ? null : a / b;
+    }
+
+    function setRes(id, val) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      if (val === null) {
+        el.textContent = '—';
+        el.classList.add('empty');
+      } else {
+        if (el.textContent !== val && el.classList.contains('empty')) animatePop(el);
+        el.textContent = val;
+        el.classList.remove('empty');
+      }
+    }
+
+    function fmtEok(n)  { return n === null ? null : (Math.round(n * 100) / 100).toLocaleString('ko-KR', { maximumFractionDigits: 2 }) + '억원'; }
+    function fmtPct(n)  { return n === null ? null : n.toFixed(1) + '%'; }
+    function fmtTimes(n){ return n === null ? null : n.toFixed(2) + '회'; }
+    function fmtDays(n) { return n === null ? null : n.toFixed(1) + '일'; }
+    function fmtMonths(n){ return n === null ? null : n.toFixed(1) + '개월'; }
+
+    function calcIndicators() {
+      const { cur, prev } = getFin();
+      const hasAny = FIN_IDS.some(id => cur[id] !== null || prev[id] !== null);
+      document.getElementById('i_hint').style.display = hasAny ? 'none' : 'block';
+
+      ['totalAssets', 'totalLiabilities', 'equity', 'revenue', 'operatingProfit', 'netIncome'].forEach(id => {
+        setRes('r_' + id + '_cur',  fmtEok(cur[id]));
+        setRes('r_' + id + '_prev', fmtEok(prev[id]));
+      });
+
+      [['cur', cur], ['prev', prev]].forEach(([suffix, f]) => {
+        setRes('r_currentRatio_' + suffix, fmtPct(mul100(div(f.curAssets, f.curLiabilities))));
+        setRes('r_quickRatio_' + suffix,   fmtPct(mul100(div(sub(f.curAssets, f.inventory), f.curLiabilities))));
+        setRes('r_debtRatio_' + suffix,    fmtPct(mul100(div(f.totalLiabilities, f.equity))));
+        setRes('r_cashScale_' + suffix,    fmtMonths(div(f.cash, div(f.sga, 12))));
+
+        setRes('r_cogsRatio_' + suffix,   fmtPct(mul100(div(f.cogs, f.revenue))));
+        setRes('r_grossMargin_' + suffix, fmtPct(mul100(div(f.grossProfit, f.revenue))));
+        setRes('r_opMargin_' + suffix,    fmtPct(mul100(div(f.operatingProfit, f.revenue))));
+        setRes('r_sgaRatio_' + suffix,    fmtPct(mul100(div(f.sga, f.revenue))));
+        setRes('r_netMargin_' + suffix,   fmtPct(mul100(div(f.netIncome, f.revenue))));
+
+        setRes('r_roa_' + suffix, fmtPct(mul100(div(f.netIncome, f.totalAssets))));
+        setRes('r_roe_' + suffix, fmtPct(mul100(div(f.netIncome, f.equity))));
+
+        const invTurnover = div(f.revenue, f.inventory);
+        setRes('r_invTurnover_' + suffix, fmtTimes(invTurnover));
+        setRes('r_invDays_' + suffix, fmtDays(div(365, invTurnover)));
+
+        const arTurnover = div(f.revenue, f.receivables);
+        setRes('r_arTurnover_' + suffix, fmtTimes(arTurnover));
+        setRes('r_arDays_' + suffix, fmtDays(div(365, arTurnover)));
+      });
+
+      // 매출성장율: 당해연도만 계산 (전전연도 데이터가 없어 직전연도는 계산 불가)
+      setRes('r_revenueGrowth_cur', fmtPct(mul100(div(sub(cur.revenue, prev.revenue), prev.revenue))));
+      setRes('r_revenueGrowth_prev', null);
+    }
+
+    function sub(a, b) { return (a === null || b === null) ? null : a - b; }
+    function mul100(n) { return n === null ? null : n * 100; }
+
+    bindFinInputs();
+    calcIndicators();
+
+    document.getElementById('f_resetBtn').addEventListener('click', () => {
+      FIN_IDS.forEach(id => {
+        ['cur', 'prev'].forEach(year => {
+          const elId = 'f_' + id + '_' + year;
+          document.getElementById(elId).value = '';
+          localStorage.removeItem('sc_' + elId);
+        });
+      });
+      calcIndicators();
+      document.getElementById('f_curAssets_cur').focus();
+    });
 
     /* ── Tab switching ── */
 

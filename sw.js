@@ -1,4 +1,4 @@
-const CACHE = 'stock-calc-v1';
+const CACHE = 'stock-calc-v2';
 const ASSETS = ['./index.html', './manifest.json'];
 
 self.addEventListener('install', e => {
@@ -6,10 +6,24 @@ self.addEventListener('install', e => {
   self.skipWaiting();
 });
 
-self.addEventListener('activate', () => self.clients.claim());
+self.addEventListener('activate', e => {
+  e.waitUntil(
+    caches.keys()
+      .then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
+      .then(() => self.clients.claim())
+  );
+});
 
+// Network-first so deployed updates show up immediately; falls back to
+// cache only when offline.
 self.addEventListener('fetch', e => {
   e.respondWith(
-    caches.match(e.request).then(cached => cached || fetch(e.request))
+    fetch(e.request)
+      .then(res => {
+        const resClone = res.clone();
+        caches.open(CACHE).then(c => c.put(e.request, resClone));
+        return res;
+      })
+      .catch(() => caches.match(e.request))
   );
 });

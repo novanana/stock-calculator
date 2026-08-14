@@ -465,6 +465,102 @@
     .fin-check.ok { color: var(--green); }
     .fin-check.bad { color: var(--red); }
 
+    /* ── Upload & auto-recognize (재무제표 사진/PDF) ── */
+    .upload-card {
+      padding: 14px 16px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .upload-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--green-dim);
+      border: 1px solid var(--green-border);
+      color: var(--green);
+      font-size: 14px;
+      font-weight: 600;
+      padding: 13px 16px;
+      border-radius: 12px;
+      cursor: pointer;
+      text-align: center;
+    }
+
+    .upload-btn:active { opacity: 0.75; }
+
+    .upload-hint {
+      font-size: 12px;
+      color: var(--text3);
+      line-height: 1.5;
+      padding: 0 2px;
+    }
+
+    .upload-status {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--text3);
+      line-height: 1.4;
+    }
+
+    .upload-status.error { color: var(--red); }
+
+    .upload-spinner {
+      width: 14px;
+      height: 14px;
+      flex-shrink: 0;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      border-top-color: var(--green);
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .review-card { margin-top: 14px; padding-bottom: 4px; }
+
+    .review-header { padding: 14px 16px 2px; }
+
+    .review-actions {
+      display: flex;
+      gap: 8px;
+      padding: 14px 16px 16px;
+    }
+
+    .btn-ghost {
+      flex: 1;
+      padding: 13px;
+      background: var(--surface2);
+      border: none;
+      border-radius: 12px;
+      color: var(--text3);
+      font-size: 15px;
+      font-family: inherit;
+      cursor: pointer;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    .btn-primary {
+      flex: 2;
+      padding: 13px;
+      background: var(--green);
+      border: none;
+      border-radius: 12px;
+      color: #04240f;
+      font-weight: 700;
+      font-size: 15px;
+      font-family: inherit;
+      cursor: pointer;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    .btn-ghost:active, .btn-primary:active { opacity: 0.75; }
+
     /* ── Indicator result rows (3가지지표) ── */
     .res-row3 {
       display: flex;
@@ -978,7 +1074,28 @@
         <button type="button" class="company-remove-btn" id="fin_removeCompanyBtn">삭제</button>
       </div>
 
-      <div class="fin-unit-note">단위: 원 · 재무제표 시트에 있는 값을 그대로 입력하세요</div>
+      <div class="section-label">사진 · PDF로 자동 입력</div>
+      <div class="card upload-card">
+        <label class="upload-btn" for="fin_uploadInput">
+          <span>재무제표 사진/PDF 올리기</span>
+        </label>
+        <input type="file" id="fin_uploadInput" accept="image/*,application/pdf" hidden>
+        <div class="upload-hint">재무상태표·손익계산서가 보이는 사진이나 PDF를 올리면 표의 숫자를 자동으로 인식합니다. 인식 결과는 적용 전에 확인·수정할 수 있어요. (인터넷 연결 필요, 처음 실행 시 다소 시간이 걸릴 수 있습니다)</div>
+        <div class="upload-status" id="fin_uploadStatus"></div>
+      </div>
+
+      <div class="card review-card" id="fin_reviewCard" style="display:none;">
+        <div class="review-header">
+          <div class="section-label" style="margin:0;">인식 결과 확인 · 필요하면 수정 후 적용하세요</div>
+        </div>
+        <div id="fin_reviewRows"></div>
+        <div class="review-actions">
+          <button type="button" class="btn-ghost" id="fin_reviewCancelBtn">취소</button>
+          <button type="button" class="btn-primary" id="fin_reviewApplyBtn">‘<span id="fin_reviewCompanyName"></span>’에 적용</button>
+        </div>
+      </div>
+
+      <div class="fin-unit-note">단위: 백만원 · 재무제표에 표시된 값을 그대로 입력하세요 (예: 1,234,567백만원 → 1234567)</div>
 
       <div class="section-label">재무상태표</div>
       <div class="card">
@@ -1784,9 +1901,8 @@
       }
     }
 
-    function fmtEok(n)  { return n === null ? null : (Math.round(n / 1e8 * 100) / 100).toLocaleString('ko-KR', { maximumFractionDigits: 2 }) + '억원'; }
+    function fmtEok(n)  { return n === null ? null : (Math.round(n / 100 * 100) / 100).toLocaleString('ko-KR', { maximumFractionDigits: 2 }) + '억원'; }
     function fmtPct(n)  { return n === null ? null : n.toFixed(1) + '%'; }
-    function fmtTimes(n){ return n === null ? null : n.toFixed(2) + '회'; }
     function fmtDays(n) { return n === null ? null : n.toFixed(1) + '일'; }
     function fmtMonths(n){ return n === null ? null : n.toFixed(1) + '개월'; }
     function sub(a, b) { return (a === null || b === null) ? null : a - b; }
@@ -1854,11 +1970,11 @@
         setRes('r_roe_' + suffix, fmtPct(mul100(div(f.netIncome, f.equity))));
 
         const invTurnover = div(f.revenue, f.inventory);
-        setRes('r_invTurnover_' + suffix, fmtTimes(invTurnover));
+        setRes('r_invTurnover_' + suffix, fmtPct(mul100(invTurnover)));
         setRes('r_invDays_' + suffix, fmtDays(div(365, invTurnover)));
 
         const arTurnover = div(f.revenue, f.receivables);
-        setRes('r_arTurnover_' + suffix, fmtTimes(arTurnover));
+        setRes('r_arTurnover_' + suffix, fmtPct(mul100(arTurnover)));
         setRes('r_arDays_' + suffix, fmtDays(div(365, arTurnover)));
       });
 
@@ -1869,6 +1985,321 @@
 
       renderComparisonTable();
     }
+
+    /* ── 재무제표 사진/PDF 자동 인식 ── */
+
+    const FIN_LABELS = {
+      curAssets: '유동자산', cash: '현금성자산', receivables: '매출채권', inventory: '재고자산',
+      totalAssets: '총자산', curLiabilities: '유동부채', totalLiabilities: '총부채', equity: '자본',
+      revenue: '매출', cogs: '매출원가', grossProfit: '매출총이익', sga: '판관비',
+      operatingProfit: '영업이익', netIncome: '당기순이익',
+    };
+
+    // 문서에 실제로 쓰이는 계정과목 표기(동의어 포함). 더 구체적인(긴) 표기부터 매칭되도록 이후 길이순 정렬.
+    const FIN_LABEL_DICT = {
+      totalAssets:      ['자산총계', '자산총액'],
+      curAssets:        ['유동자산'],
+      cash:             ['현금및현금성자산', '현금및현금등가물', '현금성자산'],
+      receivables:      ['매출채권및기타채권', '매출채권'],
+      inventory:        ['재고자산'],
+      totalLiabilities: ['부채총계', '부채총액'],
+      curLiabilities:   ['유동부채'],
+      equity:           ['자본총계', '자본총액'],
+      revenue:          ['매출액', '영업수익', '매출'],
+      cogs:             ['매출원가'],
+      grossProfit:      ['매출총이익', '매출총손익'],
+      sga:              ['판매비와관리비', '판매비와 관리비'],
+      operatingProfit:  ['영업이익', '영업손익'],
+      netIncome:        ['당기순이익', '당기순손익'],
+    };
+
+    const FIN_LABEL_VARIANTS = Object.entries(FIN_LABEL_DICT)
+      .flatMap(([id, variants]) => variants.map(variant => ({ id, variant })))
+      .sort((a, b) => b.variant.length - a.variant.length);
+
+    let scriptLoadPromises = {};
+    function loadExternalScript(src) {
+      if (scriptLoadPromises[src]) return scriptLoadPromises[src];
+      scriptLoadPromises[src] = new Promise((resolve, reject) => {
+        const s = document.createElement('script');
+        s.src = src;
+        s.onload = () => resolve();
+        s.onerror = () => reject(new Error('라이브러리를 불러오지 못했습니다. 인터넷 연결을 확인해주세요.'));
+        document.head.appendChild(s);
+      });
+      return scriptLoadPromises[src];
+    }
+
+    async function ensurePdfJs() {
+      if (window.pdfjsLib) return;
+      await loadExternalScript('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js');
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    }
+
+    async function ensureTesseract() {
+      if (window.Tesseract) return;
+      await loadExternalScript('https://cdn.jsdelivr.net/npm/tesseract.js@5.0.4/dist/tesseract.min.js');
+    }
+
+    function parseFinToken(tok) {
+      let neg = false;
+      let t = tok.trim();
+      if (t.startsWith('△') || t.startsWith('▲')) { neg = true; t = t.slice(1); }
+      if (t.startsWith('(') && t.endsWith(')')) { neg = true; t = t.slice(1, -1); }
+      if (t.startsWith('-')) { neg = true; t = t.slice(1); }
+      t = t.replace(/,/g, '');
+      const n = parseFloat(t);
+      if (!isFinite(n)) return null;
+      return neg ? -n : n;
+    }
+
+    // 입력 폼의 저장 단위는 백만원이므로, 문서에 적힌 단위를 백만원 기준으로 환산.
+    const FIN_UNIT_MULTIPLIERS = { '억원': 100, '백만원': 1, '천원': 0.001, '원': 0.000001 };
+    const FIN_UNIT_RE = /단위\s*[:：]\s*(억원|백만원|천원|원)/;
+
+    // "(주4,5,7,29)" 같은 각주 표시, "(수익)" 같은 부기 설명 등 한글이 섞인 괄호 구간은
+    // 숫자로 오인식되기 쉬워 제거한다. 순수 숫자만 있는 괄호(예: 음수 표기 "(1,234)")는 남겨둔다.
+    function stripAnnotationParens(str) {
+      return str.replace(/\([^)]*[가-힣][^)]*\)/g, ' ');
+    }
+
+    // 각 줄에서 계정과목명을 찾고, 그 뒤에 이어지는 숫자들을 당해/직전/전전연도 순으로 추출.
+    // "(단위 : 백만원)" 같은 표기를 만나면 이후 매칭되는 숫자에 배수를 적용해 백만원 단위로 환산한다.
+    function parseFinLines(lines) {
+      const found = {};
+      const usedIds = new Set();
+      let unitMultiplier = 1;
+      lines.forEach(rawLine => {
+        const line = (rawLine || '').replace(/\s+/g, ' ').trim();
+        if (!line) return;
+
+        const unitMatch = line.match(FIN_UNIT_RE);
+        if (unitMatch) unitMultiplier = FIN_UNIT_MULTIPLIERS[unitMatch[1]];
+
+        for (const { id, variant } of FIN_LABEL_VARIANTS) {
+          if (usedIds.has(id)) continue;
+          const idx = line.indexOf(variant);
+          if (idx === -1) continue;
+          const prevChar = line[idx - 1] || '';
+          if (idx > 0 && /[가-힣]/.test(prevChar)) continue; // "비유동자산" 등 더 긴 계정과목 안에서 오매칭 방지
+          const nextChar = line[idx + variant.length] || '';
+          if (/[가-힣]/.test(nextChar)) continue; // "매출원가율" 등 비율 항목 제외
+          const rest = stripAnnotationParens(line.slice(idx + variant.length));
+          const tokens = rest.match(/[△▲\-]?\(?[0-9][0-9,]*(?:\.[0-9]+)?\)?/g) || [];
+          const nums = tokens.map(parseFinToken).filter(n => n !== null).map(n => n * unitMultiplier);
+          if (nums.length === 0) continue;
+          found[id] = [nums[0] ?? null, nums[1] ?? null, nums[2] ?? null];
+          usedIds.add(id);
+          break;
+        }
+      });
+      return found;
+    }
+
+    // 표 제목 줄(예: "연결 재무상태표", "손익계산서")을 찾아 그 페이지와 다음 페이지만 골라낸다.
+    // 사업보고서 등 수백 페이지짜리 문서에서 본문 서술 중 우연히 등장하는 숫자를
+    // 재무제표 값으로 잘못 집는 것을 막기 위함. 제목을 못 찾으면 문서 전체를 그대로 사용한다.
+    const FIN_TABLE_TITLE_RE = /^(연결\s*)?(재무상태표|손익계산서)$/;
+
+    function selectFinancialStatementLines(pages) {
+      const selectedPages = new Set();
+      pages.forEach((pageLines, i) => {
+        const isAnchor = pageLines.some(l => FIN_TABLE_TITLE_RE.test(l.trim()));
+        if (isAnchor) {
+          selectedPages.add(i);
+          if (i + 1 < pages.length) selectedPages.add(i + 1); // 표가 다음 페이지로 이어지는 경우 대비
+        }
+      });
+      if (selectedPages.size === 0) return pages.flat();
+      return [...selectedPages].sort((a, b) => a - b).flatMap(i => pages[i]);
+    }
+
+    async function extractPdfLines(file, onProgress) {
+      await ensurePdfJs();
+      const buf = await file.arrayBuffer();
+      const pdf = await window.pdfjsLib.getDocument({ data: buf }).promise;
+      const pages = [];
+      let itemCount = 0;
+      for (let p = 1; p <= pdf.numPages; p++) {
+        if (onProgress) onProgress(p, pdf.numPages);
+        const page = await pdf.getPage(p);
+        const content = await page.getTextContent();
+        itemCount += content.items.length;
+        const rows = new Map();
+        content.items.forEach(item => {
+          const y = Math.round(item.transform[5] / 3) * 3;
+          if (!rows.has(y)) rows.set(y, []);
+          rows.get(y).push(item);
+        });
+        const pageLines = [...rows.keys()].sort((a, b) => b - a).map(y => {
+          const items = rows.get(y).sort((a, b) => a.transform[4] - b.transform[4]);
+          return items.map(i => i.str).join(' ');
+        });
+        pages.push(pageLines);
+      }
+      return { pages, pageCount: pdf.numPages, hasText: itemCount >= 8 };
+    }
+
+    async function renderPdfPagesToCanvases(file, maxPages) {
+      await ensurePdfJs();
+      const buf = await file.arrayBuffer();
+      const pdf = await window.pdfjsLib.getDocument({ data: buf }).promise;
+      const canvases = [];
+      const n = Math.min(pdf.numPages, maxPages);
+      for (let p = 1; p <= n; p++) {
+        const page = await pdf.getPage(p);
+        const viewport = page.getViewport({ scale: 2 });
+        const canvas = document.createElement('canvas');
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+        canvases.push(canvas);
+      }
+      return canvases;
+    }
+
+    async function ocrSource(source, onProgress) {
+      await ensureTesseract();
+      const { data } = await window.Tesseract.recognize(source, 'kor+eng', {
+        logger: m => {
+          if (onProgress && m.status === 'recognizing text') onProgress(m.progress);
+        },
+      });
+      return (data.lines || []).map(l => l.text);
+    }
+
+    function setUploadStatus(html, isError) {
+      const el = document.getElementById('fin_uploadStatus');
+      el.style.display = 'flex';
+      el.classList.toggle('error', !!isError);
+      el.innerHTML = html;
+    }
+
+    function spinnerHtml(text) {
+      return `<span class="upload-spinner"></span><span>${text}</span>`;
+    }
+
+    async function handleFinUpload(file) {
+      const MAX_PDF_PAGES = 6;
+      setUploadStatus(spinnerHtml('파일 분석 중...'));
+      try {
+        let lines = [];
+        const isPdf = file.type === 'application/pdf' || /\.pdf$/i.test(file.name);
+
+        if (isPdf) {
+          const extracted = await extractPdfLines(file, (p, total) => {
+            if (total > 20) setUploadStatus(spinnerHtml(`문서 확인 중... (${p}/${total}페이지)`));
+          });
+          if (extracted.hasText) {
+            lines = selectFinancialStatementLines(extracted.pages);
+          } else {
+            if (extracted.pageCount > MAX_PDF_PAGES) {
+              setUploadStatus(spinnerHtml(`문서가 길어 처음 ${MAX_PDF_PAGES}페이지만 분석합니다...`));
+            }
+            const canvases = await renderPdfPagesToCanvases(file, MAX_PDF_PAGES);
+            for (let i = 0; i < canvases.length; i++) {
+              const pageLines = await ocrSource(canvases[i], p => {
+                setUploadStatus(spinnerHtml(`이미지 인식 중 (${i + 1}/${canvases.length}페이지) ${Math.round(p * 100)}%`));
+              });
+              lines = lines.concat(pageLines);
+            }
+          }
+        } else if (file.type.startsWith('image/')) {
+          lines = await ocrSource(file, p => {
+            setUploadStatus(spinnerHtml(`이미지 인식 중... ${Math.round(p * 100)}%`));
+          });
+        } else {
+          throw new Error('지원하지 않는 파일 형식입니다. 사진 또는 PDF 파일을 올려주세요.');
+        }
+
+        const matched = parseFinLines(lines);
+        const matchedCount = Object.keys(matched).length;
+        if (matchedCount === 0) {
+          setUploadStatus('항목을 인식하지 못했습니다. 표가 선명하게 보이는 사진/PDF인지 확인해주세요.', true);
+          return;
+        }
+        setUploadStatus(`${matchedCount}개 항목을 인식했습니다. 아래에서 확인 후 적용하세요.`);
+        showFinReview(matched);
+      } catch (err) {
+        setUploadStatus('분석 중 오류가 발생했습니다: ' + (err && err.message ? err.message : err), true);
+      }
+    }
+
+    function showFinReview(matched) {
+      const wrap = document.getElementById('fin_reviewRows');
+      let html = `
+        <div class="fin-row fin-row-header">
+          <span class="fin-label"></span>
+          <div class="fin-inputs">
+            <span class="fin-col-label">당해연도</span>
+            <span class="fin-col-label">직전연도</span>
+            <span class="fin-col-label">전전연도</span>
+          </div>
+        </div>`;
+      FIN_IDS.forEach(id => {
+        const vals = matched[id] || [null, null, null];
+        html += `
+        <div class="fin-row">
+          <span class="fin-label">${FIN_LABELS[id]}</span>
+          <div class="fin-inputs">
+            <input type="text" inputmode="decimal" class="fin-input" id="rv_${id}_cur" value="${vals[0] != null ? formatSignedDisplay(String(vals[0])) : ''}" placeholder="0" autocomplete="off" autocorrect="off" spellcheck="false">
+            <input type="text" inputmode="decimal" class="fin-input" id="rv_${id}_prev" value="${vals[1] != null ? formatSignedDisplay(String(vals[1])) : ''}" placeholder="0" autocomplete="off" autocorrect="off" spellcheck="false">
+            <input type="text" inputmode="decimal" class="fin-input" id="rv_${id}_prev2" value="${vals[2] != null ? formatSignedDisplay(String(vals[2])) : ''}" placeholder="0" autocomplete="off" autocorrect="off" spellcheck="false">
+          </div>
+        </div>`;
+      });
+      wrap.innerHTML = html;
+      bindReviewInputs();
+      document.getElementById('fin_reviewCompanyName').textContent = companyName(finActiveCompany);
+      document.getElementById('fin_reviewCard').style.display = '';
+      document.getElementById('fin_reviewCard').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function bindReviewInputs() {
+      FIN_IDS.forEach(id => {
+        YEARS.forEach(year => {
+          const el = document.getElementById('rv_' + id + '_' + year);
+          if (!el) return;
+          el.addEventListener('input', function () { this.value = sanitizeSigned(this.value); });
+          el.addEventListener('focus', function () {
+            this.value = sanitizeSigned(this.value.replace(/,/g, ''));
+            const self = this;
+            setTimeout(() => { if (document.activeElement === self) self.select(); }, 10);
+          });
+          el.addEventListener('blur', function () {
+            this.value = this.value ? formatSignedDisplay(sanitizeSigned(this.value)) : '';
+          });
+        });
+      });
+    }
+
+    function closeFinReview() {
+      document.getElementById('fin_reviewCard').style.display = 'none';
+      document.getElementById('fin_uploadInput').value = '';
+    }
+
+    document.getElementById('fin_uploadInput').addEventListener('change', function () {
+      const file = this.files && this.files[0];
+      if (!file) return;
+      document.getElementById('fin_reviewCard').style.display = 'none';
+      handleFinUpload(file);
+    });
+
+    document.getElementById('fin_reviewApplyBtn').addEventListener('click', () => {
+      FIN_IDS.forEach(id => {
+        YEARS.forEach(year => {
+          const el = document.getElementById('rv_' + id + '_' + year);
+          if (!el) return;
+          const raw = sanitizeSigned(el.value);
+          if (raw && raw !== '-') localStorage.setItem(finKey(id, year), raw);
+        });
+      });
+      closeFinReview();
+      loadFinForm();
+      calcIndicators();
+    });
+
+    document.getElementById('fin_reviewCancelBtn').addEventListener('click', closeFinReview);
 
     renderAllCompanyBars();
     updateCompanyNameInput();

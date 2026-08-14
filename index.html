@@ -396,44 +396,47 @@
     /* ── Finance input rows (재무제표) ── */
     .fin-row {
       display: flex;
-      align-items: center;
-      justify-content: space-between;
+      flex-direction: column;
+      align-items: stretch;
       padding: 10px 16px;
       border-bottom: 1px solid var(--border);
-      gap: 10px;
+      gap: 6px;
     }
 
     .fin-row:last-child { border-bottom: none; }
 
     .fin-row-header { padding: 8px 16px 6px; }
+    .fin-row-header .fin-label { display: none; }
 
     .fin-label {
       font-size: 14px;
       color: var(--text);
-      flex: 1;
     }
 
     .fin-col-label {
       font-size: 11px;
       color: var(--text3);
-      width: 78px;
+      flex: 1;
+      min-width: 0;
       text-align: right;
     }
 
     .fin-inputs {
       display: flex;
       gap: 8px;
-      flex-shrink: 0;
+      width: 100%;
     }
 
     .fin-input {
-      width: 78px;
+      flex: 1;
+      min-width: 0;
+      width: 0;
       background: var(--surface2);
       border: none;
       border-radius: 8px;
-      padding: 8px 8px;
+      padding: 8px 6px;
       color: var(--text);
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 600;
       font-family: inherit;
       text-align: right;
@@ -465,33 +468,34 @@
     /* ── Indicator result rows (3가지지표) ── */
     .res-row3 {
       display: flex;
-      align-items: center;
-      justify-content: space-between;
+      flex-direction: column;
+      align-items: stretch;
       padding: 12px 16px;
       border-bottom: 1px solid var(--border);
-      gap: 8px;
+      gap: 6px;
     }
 
     .res-row3:last-child { border-bottom: none; }
 
     .res-row3-header { padding: 8px 16px 6px; }
+    .res-row3-header .res-label3 { display: none; }
 
     .res-label3 {
       font-size: 14px;
       color: var(--text3);
-      flex: 1;
     }
 
     .res-value3-wrap {
       display: flex;
-      gap: 14px;
-      flex-shrink: 0;
+      gap: 8px;
+      width: 100%;
     }
 
     .res-value3 {
-      width: 72px;
+      flex: 1;
+      min-width: 0;
       text-align: right;
-      font-size: 15px;
+      font-size: 14px;
       font-weight: 600;
       color: var(--text);
     }
@@ -504,7 +508,8 @@
     .res-col-header {
       font-size: 11px;
       color: var(--text3);
-      width: 72px;
+      flex: 1;
+      min-width: 0;
       text-align: right;
     }
 
@@ -973,7 +978,7 @@
         <button type="button" class="company-remove-btn" id="fin_removeCompanyBtn">삭제</button>
       </div>
 
-      <div class="fin-unit-note">단위: 억원 · 재무제표 시트에 있는 값을 그대로 입력하세요</div>
+      <div class="fin-unit-note">단위: 원 · 재무제표 시트에 있는 값을 그대로 입력하세요</div>
 
       <div class="section-label">재무상태표</div>
       <div class="card">
@@ -982,6 +987,7 @@
           <div class="fin-inputs">
             <span class="fin-col-label">당해연도</span>
             <span class="fin-col-label">직전연도</span>
+            <span class="fin-col-label">전전연도</span>
           </div>
         </div>
         <div class="fin-row">
@@ -989,6 +995,7 @@
           <div class="fin-inputs">
             <input type="text" inputmode="decimal" class="fin-input" id="f_curAssets_cur" placeholder="0" autocomplete="off" autocorrect="off" spellcheck="false">
             <input type="text" inputmode="decimal" class="fin-input" id="f_curAssets_prev" placeholder="0" autocomplete="off" autocorrect="off" spellcheck="false">
+            <input type="text" inputmode="decimal" class="fin-input" id="f_curAssets_prev2" placeholder="0" autocomplete="off" autocorrect="off" spellcheck="false">
           </div>
         </div>
         <div class="fin-row">
@@ -996,6 +1003,7 @@
           <div class="fin-inputs">
             <input type="text" inputmode="decimal" class="fin-input" id="f_cash_cur" placeholder="0" autocomplete="off" autocorrect="off" spellcheck="false">
             <input type="text" inputmode="decimal" class="fin-input" id="f_cash_prev" placeholder="0" autocomplete="off" autocorrect="off" spellcheck="false">
+            <input type="text" inputmode="decimal" class="fin-input" id="f_cash_prev2" placeholder="0" autocomplete="off" autocorrect="off" spellcheck="false">
           </div>
         </div>
         <div class="fin-row">
@@ -1003,6 +1011,7 @@
           <div class="fin-inputs">
             <input type="text" inputmode="decimal" class="fin-input" id="f_receivables_cur" placeholder="0" autocomplete="off" autocorrect="off" spellcheck="false">
             <input type="text" inputmode="decimal" class="fin-input" id="f_receivables_prev" placeholder="0" autocomplete="off" autocorrect="off" spellcheck="false">
+            <input type="text" inputmode="decimal" class="fin-input" id="f_receivables_prev2" placeholder="0" autocomplete="off" autocorrect="off" spellcheck="false">
           </div>
         </div>
         <div class="fin-row">
@@ -1010,6 +1019,7 @@
           <div class="fin-inputs">
             <input type="text" inputmode="decimal" class="fin-input" id="f_inventory_cur" placeholder="0" autocomplete="off" autocorrect="off" spellcheck="false">
             <input type="text" inputmode="decimal" class="fin-input" id="f_inventory_prev" placeholder="0" autocomplete="off" autocorrect="off" spellcheck="false">
+            <input type="text" inputmode="decimal" class="fin-input" id="f_inventory_prev2" placeholder="0" autocomplete="off" autocorrect="off" spellcheck="false">
           </div>
         </div>
         <div class="fin-row">
@@ -1017,6 +1027,7 @@
           <div class="fin-inputs">
             <input type="text" inputmode="decimal" class="fin-input" id="f_totalAssets_cur" placeholder="0" autocomplete="off" autocorrect="off" spellcheck="false">
             <input type="text" inputmode="decimal" class="fin-input" id="f_totalAssets_prev" placeholder="0" autocomplete="off" autocorrect="off" spellcheck="false">
+            <input type="text" inputmode="decimal" class="fin-input" id="f_totalAssets_prev2" placeholder="0" autocomplete="off" autocorrect="off" spellcheck="false">
           </div>
         </div>
         <div class="fin-row">
@@ -1024,6 +1035,7 @@
           <div class="fin-inputs">
             <input type="text" inputmode="decimal" class="fin-input" id="f_curLiabilities_cur" placeholder="0" autocomplete="off" autocorrect="off" spellcheck="false">
             <input type="text" inputmode="decimal" class="fin-input" id="f_curLiabilities_prev" placeholder="0" autocomplete="off" autocorrect="off" spellcheck="false">
+            <input type="text" inputmode="decimal" class="fin-input" id="f_curLiabilities_prev2" placeholder="0" autocomplete="off" autocorrect="off" spellcheck="false">
           </div>
         </div>
         <div class="fin-row">
@@ -1031,6 +1043,7 @@
           <div class="fin-inputs">
             <input type="text" inputmode="decimal" class="fin-input" id="f_totalLiabilities_cur" placeholder="0" autocomplete="off" autocorrect="off" spellcheck="false">
             <input type="text" inputmode="decimal" class="fin-input" id="f_totalLiabilities_prev" placeholder="0" autocomplete="off" autocorrect="off" spellcheck="false">
+            <input type="text" inputmode="decimal" class="fin-input" id="f_totalLiabilities_prev2" placeholder="0" autocomplete="off" autocorrect="off" spellcheck="false">
           </div>
         </div>
         <div class="fin-row">
@@ -1038,6 +1051,7 @@
           <div class="fin-inputs">
             <input type="text" inputmode="decimal" class="fin-input" id="f_equity_cur" placeholder="0" autocomplete="off" autocorrect="off" spellcheck="false">
             <input type="text" inputmode="decimal" class="fin-input" id="f_equity_prev" placeholder="0" autocomplete="off" autocorrect="off" spellcheck="false">
+            <input type="text" inputmode="decimal" class="fin-input" id="f_equity_prev2" placeholder="0" autocomplete="off" autocorrect="off" spellcheck="false">
           </div>
         </div>
       </div>
@@ -1049,6 +1063,7 @@
           <div class="fin-inputs">
             <span class="fin-col-label">당해연도</span>
             <span class="fin-col-label">직전연도</span>
+            <span class="fin-col-label">전전연도</span>
           </div>
         </div>
         <div class="fin-row">
@@ -1056,6 +1071,7 @@
           <div class="fin-inputs">
             <input type="text" inputmode="decimal" class="fin-input" id="f_revenue_cur" placeholder="0" autocomplete="off" autocorrect="off" spellcheck="false">
             <input type="text" inputmode="decimal" class="fin-input" id="f_revenue_prev" placeholder="0" autocomplete="off" autocorrect="off" spellcheck="false">
+            <input type="text" inputmode="decimal" class="fin-input" id="f_revenue_prev2" placeholder="0" autocomplete="off" autocorrect="off" spellcheck="false">
           </div>
         </div>
         <div class="fin-row">
@@ -1063,6 +1079,7 @@
           <div class="fin-inputs">
             <input type="text" inputmode="decimal" class="fin-input" id="f_cogs_cur" placeholder="0" autocomplete="off" autocorrect="off" spellcheck="false">
             <input type="text" inputmode="decimal" class="fin-input" id="f_cogs_prev" placeholder="0" autocomplete="off" autocorrect="off" spellcheck="false">
+            <input type="text" inputmode="decimal" class="fin-input" id="f_cogs_prev2" placeholder="0" autocomplete="off" autocorrect="off" spellcheck="false">
           </div>
         </div>
         <div class="fin-row">
@@ -1070,6 +1087,7 @@
           <div class="fin-inputs">
             <input type="text" inputmode="decimal" class="fin-input" id="f_grossProfit_cur" placeholder="0" autocomplete="off" autocorrect="off" spellcheck="false">
             <input type="text" inputmode="decimal" class="fin-input" id="f_grossProfit_prev" placeholder="0" autocomplete="off" autocorrect="off" spellcheck="false">
+            <input type="text" inputmode="decimal" class="fin-input" id="f_grossProfit_prev2" placeholder="0" autocomplete="off" autocorrect="off" spellcheck="false">
           </div>
         </div>
         <div class="fin-row">
@@ -1077,6 +1095,7 @@
           <div class="fin-inputs">
             <input type="text" inputmode="decimal" class="fin-input" id="f_sga_cur" placeholder="0" autocomplete="off" autocorrect="off" spellcheck="false">
             <input type="text" inputmode="decimal" class="fin-input" id="f_sga_prev" placeholder="0" autocomplete="off" autocorrect="off" spellcheck="false">
+            <input type="text" inputmode="decimal" class="fin-input" id="f_sga_prev2" placeholder="0" autocomplete="off" autocorrect="off" spellcheck="false">
           </div>
         </div>
         <div class="fin-row">
@@ -1084,6 +1103,7 @@
           <div class="fin-inputs">
             <input type="text" inputmode="decimal" class="fin-input" id="f_operatingProfit_cur" placeholder="0" autocomplete="off" autocorrect="off" spellcheck="false">
             <input type="text" inputmode="decimal" class="fin-input" id="f_operatingProfit_prev" placeholder="0" autocomplete="off" autocorrect="off" spellcheck="false">
+            <input type="text" inputmode="decimal" class="fin-input" id="f_operatingProfit_prev2" placeholder="0" autocomplete="off" autocorrect="off" spellcheck="false">
           </div>
         </div>
         <div class="fin-row">
@@ -1091,6 +1111,7 @@
           <div class="fin-inputs">
             <input type="text" inputmode="decimal" class="fin-input" id="f_netIncome_cur" placeholder="0" autocomplete="off" autocorrect="off" spellcheck="false">
             <input type="text" inputmode="decimal" class="fin-input" id="f_netIncome_prev" placeholder="0" autocomplete="off" autocorrect="off" spellcheck="false">
+            <input type="text" inputmode="decimal" class="fin-input" id="f_netIncome_prev2" placeholder="0" autocomplete="off" autocorrect="off" spellcheck="false">
           </div>
         </div>
       </div>
@@ -1109,7 +1130,7 @@
         <div class="compare-scroll" id="i_compareWrap"></div>
       </div>
 
-      <div class="hint-card" id="i_hint">먼저 '재무제표입력' 탭에서 당해연도·직전연도 재무 데이터를 입력하면 아래 지표가 자동으로 계산됩니다.</div>
+      <div class="hint-card" id="i_hint">먼저 '재무제표입력' 탭에서 당해연도·직전연도·전전연도 재무 데이터를 입력하면 아래 지표가 자동으로 계산됩니다.</div>
 
       <div class="section-label">전체 개요 <span id="i_activeCompanyLabel" class="section-label-sub"></span></div>
       <div class="card">
@@ -1118,31 +1139,32 @@
           <div class="res-value3-wrap">
             <span class="res-col-header">당해연도</span>
             <span class="res-col-header">직전연도</span>
+            <span class="res-col-header">전전연도</span>
           </div>
         </div>
         <div class="res-row3">
           <span class="res-label3">총자산</span>
-          <div class="res-value3-wrap"><span class="res-value3 empty" id="r_totalAssets_cur">—</span><span class="res-value3 empty" id="r_totalAssets_prev">—</span></div>
+          <div class="res-value3-wrap"><span class="res-value3 empty" id="r_totalAssets_cur">—</span><span class="res-value3 empty" id="r_totalAssets_prev">—</span><span class="res-value3 empty" id="r_totalAssets_prev2">—</span></div>
         </div>
         <div class="res-row3">
           <span class="res-label3">총부채</span>
-          <div class="res-value3-wrap"><span class="res-value3 empty" id="r_totalLiabilities_cur">—</span><span class="res-value3 empty" id="r_totalLiabilities_prev">—</span></div>
+          <div class="res-value3-wrap"><span class="res-value3 empty" id="r_totalLiabilities_cur">—</span><span class="res-value3 empty" id="r_totalLiabilities_prev">—</span><span class="res-value3 empty" id="r_totalLiabilities_prev2">—</span></div>
         </div>
         <div class="res-row3">
           <span class="res-label3">자본</span>
-          <div class="res-value3-wrap"><span class="res-value3 empty" id="r_equity_cur">—</span><span class="res-value3 empty" id="r_equity_prev">—</span></div>
+          <div class="res-value3-wrap"><span class="res-value3 empty" id="r_equity_cur">—</span><span class="res-value3 empty" id="r_equity_prev">—</span><span class="res-value3 empty" id="r_equity_prev2">—</span></div>
         </div>
         <div class="res-row3">
           <span class="res-label3">매출</span>
-          <div class="res-value3-wrap"><span class="res-value3 empty" id="r_revenue_cur">—</span><span class="res-value3 empty" id="r_revenue_prev">—</span></div>
+          <div class="res-value3-wrap"><span class="res-value3 empty" id="r_revenue_cur">—</span><span class="res-value3 empty" id="r_revenue_prev">—</span><span class="res-value3 empty" id="r_revenue_prev2">—</span></div>
         </div>
         <div class="res-row3">
           <span class="res-label3">영업이익</span>
-          <div class="res-value3-wrap"><span class="res-value3 empty" id="r_operatingProfit_cur">—</span><span class="res-value3 empty" id="r_operatingProfit_prev">—</span></div>
+          <div class="res-value3-wrap"><span class="res-value3 empty" id="r_operatingProfit_cur">—</span><span class="res-value3 empty" id="r_operatingProfit_prev">—</span><span class="res-value3 empty" id="r_operatingProfit_prev2">—</span></div>
         </div>
         <div class="res-row3">
           <span class="res-label3">당기순이익</span>
-          <div class="res-value3-wrap"><span class="res-value3 empty" id="r_netIncome_cur">—</span><span class="res-value3 empty" id="r_netIncome_prev">—</span></div>
+          <div class="res-value3-wrap"><span class="res-value3 empty" id="r_netIncome_cur">—</span><span class="res-value3 empty" id="r_netIncome_prev">—</span><span class="res-value3 empty" id="r_netIncome_prev2">—</span></div>
         </div>
       </div>
 
@@ -1153,23 +1175,24 @@
           <div class="res-value3-wrap">
             <span class="res-col-header">당해연도</span>
             <span class="res-col-header">직전연도</span>
+            <span class="res-col-header">전전연도</span>
           </div>
         </div>
         <div class="res-row3">
           <span class="res-label3">유동비율</span>
-          <div class="res-value3-wrap"><span class="res-value3 empty" id="r_currentRatio_cur">—</span><span class="res-value3 empty" id="r_currentRatio_prev">—</span></div>
+          <div class="res-value3-wrap"><span class="res-value3 empty" id="r_currentRatio_cur">—</span><span class="res-value3 empty" id="r_currentRatio_prev">—</span><span class="res-value3 empty" id="r_currentRatio_prev2">—</span></div>
         </div>
         <div class="res-row3">
           <span class="res-label3">당좌비율</span>
-          <div class="res-value3-wrap"><span class="res-value3 empty" id="r_quickRatio_cur">—</span><span class="res-value3 empty" id="r_quickRatio_prev">—</span></div>
+          <div class="res-value3-wrap"><span class="res-value3 empty" id="r_quickRatio_cur">—</span><span class="res-value3 empty" id="r_quickRatio_prev">—</span><span class="res-value3 empty" id="r_quickRatio_prev2">—</span></div>
         </div>
         <div class="res-row3">
           <span class="res-label3">부채비율</span>
-          <div class="res-value3-wrap"><span class="res-value3 empty" id="r_debtRatio_cur">—</span><span class="res-value3 empty" id="r_debtRatio_prev">—</span></div>
+          <div class="res-value3-wrap"><span class="res-value3 empty" id="r_debtRatio_cur">—</span><span class="res-value3 empty" id="r_debtRatio_prev">—</span><span class="res-value3 empty" id="r_debtRatio_prev2">—</span></div>
         </div>
         <div class="res-row3">
           <span class="res-label3">현금규모</span>
-          <div class="res-value3-wrap"><span class="res-value3 empty" id="r_cashScale_cur">—</span><span class="res-value3 empty" id="r_cashScale_prev">—</span></div>
+          <div class="res-value3-wrap"><span class="res-value3 empty" id="r_cashScale_cur">—</span><span class="res-value3 empty" id="r_cashScale_prev">—</span><span class="res-value3 empty" id="r_cashScale_prev2">—</span></div>
         </div>
       </div>
 
@@ -1180,31 +1203,32 @@
           <div class="res-value3-wrap">
             <span class="res-col-header">당해연도</span>
             <span class="res-col-header">직전연도</span>
+            <span class="res-col-header">전전연도</span>
           </div>
         </div>
         <div class="res-row3">
           <span class="res-label3">매출성장율</span>
-          <div class="res-value3-wrap"><span class="res-value3 empty" id="r_revenueGrowth_cur">—</span><span class="res-value3 empty" id="r_revenueGrowth_prev">—</span></div>
+          <div class="res-value3-wrap"><span class="res-value3 empty" id="r_revenueGrowth_cur">—</span><span class="res-value3 empty" id="r_revenueGrowth_prev">—</span><span class="res-value3 empty" id="r_revenueGrowth_prev2">—</span></div>
         </div>
         <div class="res-row3">
           <span class="res-label3">원가율</span>
-          <div class="res-value3-wrap"><span class="res-value3 empty" id="r_cogsRatio_cur">—</span><span class="res-value3 empty" id="r_cogsRatio_prev">—</span></div>
+          <div class="res-value3-wrap"><span class="res-value3 empty" id="r_cogsRatio_cur">—</span><span class="res-value3 empty" id="r_cogsRatio_prev">—</span><span class="res-value3 empty" id="r_cogsRatio_prev2">—</span></div>
         </div>
         <div class="res-row3">
           <span class="res-label3">매출총이익율</span>
-          <div class="res-value3-wrap"><span class="res-value3 empty" id="r_grossMargin_cur">—</span><span class="res-value3 empty" id="r_grossMargin_prev">—</span></div>
+          <div class="res-value3-wrap"><span class="res-value3 empty" id="r_grossMargin_cur">—</span><span class="res-value3 empty" id="r_grossMargin_prev">—</span><span class="res-value3 empty" id="r_grossMargin_prev2">—</span></div>
         </div>
         <div class="res-row3">
           <span class="res-label3">영업이익율</span>
-          <div class="res-value3-wrap"><span class="res-value3 empty" id="r_opMargin_cur">—</span><span class="res-value3 empty" id="r_opMargin_prev">—</span></div>
+          <div class="res-value3-wrap"><span class="res-value3 empty" id="r_opMargin_cur">—</span><span class="res-value3 empty" id="r_opMargin_prev">—</span><span class="res-value3 empty" id="r_opMargin_prev2">—</span></div>
         </div>
         <div class="res-row3">
           <span class="res-label3">관리비율</span>
-          <div class="res-value3-wrap"><span class="res-value3 empty" id="r_sgaRatio_cur">—</span><span class="res-value3 empty" id="r_sgaRatio_prev">—</span></div>
+          <div class="res-value3-wrap"><span class="res-value3 empty" id="r_sgaRatio_cur">—</span><span class="res-value3 empty" id="r_sgaRatio_prev">—</span><span class="res-value3 empty" id="r_sgaRatio_prev2">—</span></div>
         </div>
         <div class="res-row3">
           <span class="res-label3">당기순이익율</span>
-          <div class="res-value3-wrap"><span class="res-value3 empty" id="r_netMargin_cur">—</span><span class="res-value3 empty" id="r_netMargin_prev">—</span></div>
+          <div class="res-value3-wrap"><span class="res-value3 empty" id="r_netMargin_cur">—</span><span class="res-value3 empty" id="r_netMargin_prev">—</span><span class="res-value3 empty" id="r_netMargin_prev2">—</span></div>
         </div>
       </div>
 
@@ -1215,31 +1239,32 @@
           <div class="res-value3-wrap">
             <span class="res-col-header">당해연도</span>
             <span class="res-col-header">직전연도</span>
+            <span class="res-col-header">전전연도</span>
           </div>
         </div>
         <div class="res-row3">
           <span class="res-label3">총자산이익율</span>
-          <div class="res-value3-wrap"><span class="res-value3 empty" id="r_roa_cur">—</span><span class="res-value3 empty" id="r_roa_prev">—</span></div>
+          <div class="res-value3-wrap"><span class="res-value3 empty" id="r_roa_cur">—</span><span class="res-value3 empty" id="r_roa_prev">—</span><span class="res-value3 empty" id="r_roa_prev2">—</span></div>
         </div>
         <div class="res-row3">
           <span class="res-label3">자기자본이익율</span>
-          <div class="res-value3-wrap"><span class="res-value3 empty" id="r_roe_cur">—</span><span class="res-value3 empty" id="r_roe_prev">—</span></div>
+          <div class="res-value3-wrap"><span class="res-value3 empty" id="r_roe_cur">—</span><span class="res-value3 empty" id="r_roe_prev">—</span><span class="res-value3 empty" id="r_roe_prev2">—</span></div>
         </div>
         <div class="res-row3">
           <span class="res-label3">재고자산회전율</span>
-          <div class="res-value3-wrap"><span class="res-value3 empty" id="r_invTurnover_cur">—</span><span class="res-value3 empty" id="r_invTurnover_prev">—</span></div>
+          <div class="res-value3-wrap"><span class="res-value3 empty" id="r_invTurnover_cur">—</span><span class="res-value3 empty" id="r_invTurnover_prev">—</span><span class="res-value3 empty" id="r_invTurnover_prev2">—</span></div>
         </div>
         <div class="res-row3">
           <span class="res-label3">(재고자산 소진일수)</span>
-          <div class="res-value3-wrap"><span class="res-value3 empty" id="r_invDays_cur">—</span><span class="res-value3 empty" id="r_invDays_prev">—</span></div>
+          <div class="res-value3-wrap"><span class="res-value3 empty" id="r_invDays_cur">—</span><span class="res-value3 empty" id="r_invDays_prev">—</span><span class="res-value3 empty" id="r_invDays_prev2">—</span></div>
         </div>
         <div class="res-row3">
           <span class="res-label3">매출채권회전율</span>
-          <div class="res-value3-wrap"><span class="res-value3 empty" id="r_arTurnover_cur">—</span><span class="res-value3 empty" id="r_arTurnover_prev">—</span></div>
+          <div class="res-value3-wrap"><span class="res-value3 empty" id="r_arTurnover_cur">—</span><span class="res-value3 empty" id="r_arTurnover_prev">—</span><span class="res-value3 empty" id="r_arTurnover_prev2">—</span></div>
         </div>
         <div class="res-row3">
           <span class="res-label3">(매출채권 회수일수)</span>
-          <div class="res-value3-wrap"><span class="res-value3 empty" id="r_arDays_cur">—</span><span class="res-value3 empty" id="r_arDays_prev">—</span></div>
+          <div class="res-value3-wrap"><span class="res-value3 empty" id="r_arDays_cur">—</span><span class="res-value3 empty" id="r_arDays_prev">—</span><span class="res-value3 empty" id="r_arDays_prev2">—</span></div>
         </div>
       </div>
 
@@ -1567,7 +1592,8 @@
       'revenue', 'cogs', 'grossProfit', 'sga', 'operatingProfit', 'netIncome',
     ];
 
-    const ALL_FIN_INPUT_IDS = FIN_IDS.flatMap(id => ['f_' + id + '_cur', 'f_' + id + '_prev']);
+    const YEARS = ['cur', 'prev', 'prev2'];
+    const ALL_FIN_INPUT_IDS = FIN_IDS.flatMap(id => YEARS.map(year => 'f_' + id + '_' + year));
     const MAX_COMPANIES = 5;
     const COMPANY_LETTERS = ['A', 'B', 'C', 'D', 'E'];
 
@@ -1639,7 +1665,7 @@
       const removed = finActiveCompany;
       for (let k = removed; k < finCompanyCount; k++) {
         FIN_IDS.forEach(id => {
-          ['cur', 'prev'].forEach(year => {
+          YEARS.forEach(year => {
             const v = localStorage.getItem(finKey(id, year, k + 1));
             if (v !== null) localStorage.setItem(finKey(id, year, k), v);
             else localStorage.removeItem(finKey(id, year, k));
@@ -1650,7 +1676,7 @@
         else localStorage.removeItem('sc_fin_name_c' + k);
       }
       FIN_IDS.forEach(id => {
-        ['cur', 'prev'].forEach(year => localStorage.removeItem(finKey(id, year, finCompanyCount)));
+        YEARS.forEach(year => localStorage.removeItem(finKey(id, year, finCompanyCount)));
       });
       localStorage.removeItem('sc_fin_name_c' + finCompanyCount);
       finCompanyCount--;
@@ -1660,7 +1686,7 @@
 
     function loadFinForm() {
       FIN_IDS.forEach(id => {
-        ['cur', 'prev'].forEach(year => {
+        YEARS.forEach(year => {
           const el = document.getElementById('f_' + id + '_' + year);
           const saved = localStorage.getItem(finKey(id, year));
           el.value = saved ? formatSignedDisplay(saved) : '';
@@ -1694,7 +1720,7 @@
 
     function bindFinInputs() {
       FIN_IDS.forEach(id => {
-        ['cur', 'prev'].forEach(year => {
+        YEARS.forEach(year => {
           const elId = 'f_' + id + '_' + year;
           const el = document.getElementById(elId);
 
@@ -1730,12 +1756,13 @@
     }
 
     function getFinForCompany(n) {
-      const cur = {}, prev = {};
+      const result = { cur: {}, prev: {}, prev2: {} };
       FIN_IDS.forEach(id => {
-        cur[id]  = parseSigned(localStorage.getItem(finKey(id, 'cur', n)));
-        prev[id] = parseSigned(localStorage.getItem(finKey(id, 'prev', n)));
+        YEARS.forEach(year => {
+          result[year][id] = parseSigned(localStorage.getItem(finKey(id, year, n)));
+        });
       });
-      return { cur, prev };
+      return result;
     }
 
     function getFin() { return getFinForCompany(finActiveCompany); }
@@ -1757,7 +1784,7 @@
       }
     }
 
-    function fmtEok(n)  { return n === null ? null : (Math.round(n * 100) / 100).toLocaleString('ko-KR', { maximumFractionDigits: 2 }) + '억원'; }
+    function fmtEok(n)  { return n === null ? null : (Math.round(n / 1e8 * 100) / 100).toLocaleString('ko-KR', { maximumFractionDigits: 2 }) + '억원'; }
     function fmtPct(n)  { return n === null ? null : n.toFixed(1) + '%'; }
     function fmtTimes(n){ return n === null ? null : n.toFixed(2) + '회'; }
     function fmtDays(n) { return n === null ? null : n.toFixed(1) + '일'; }
@@ -1799,18 +1826,19 @@
     }
 
     function calcIndicators() {
-      const { cur, prev } = getFin();
-      const hasAny = FIN_IDS.some(id => cur[id] !== null || prev[id] !== null);
+      const { cur, prev, prev2 } = getFin();
+      const hasAny = FIN_IDS.some(id => cur[id] !== null || prev[id] !== null || prev2[id] !== null);
       document.getElementById('i_hint').style.display = hasAny ? 'none' : 'block';
       const activeLabel = document.getElementById('i_activeCompanyLabel');
       if (activeLabel) activeLabel.textContent = '· ' + companyName(finActiveCompany);
 
       ['totalAssets', 'totalLiabilities', 'equity', 'revenue', 'operatingProfit', 'netIncome'].forEach(id => {
-        setRes('r_' + id + '_cur',  fmtEok(cur[id]));
-        setRes('r_' + id + '_prev', fmtEok(prev[id]));
+        setRes('r_' + id + '_cur',   fmtEok(cur[id]));
+        setRes('r_' + id + '_prev',  fmtEok(prev[id]));
+        setRes('r_' + id + '_prev2', fmtEok(prev2[id]));
       });
 
-      [['cur', cur], ['prev', prev]].forEach(([suffix, f]) => {
+      [['cur', cur], ['prev', prev], ['prev2', prev2]].forEach(([suffix, f]) => {
         setRes('r_currentRatio_' + suffix, fmtPct(mul100(div(f.curAssets, f.curLiabilities))));
         setRes('r_quickRatio_' + suffix,   fmtPct(mul100(div(sub(f.curAssets, f.inventory), f.curLiabilities))));
         setRes('r_debtRatio_' + suffix,    fmtPct(mul100(div(f.totalLiabilities, f.equity))));
@@ -1834,9 +1862,10 @@
         setRes('r_arDays_' + suffix, fmtDays(div(365, arTurnover)));
       });
 
-      // 매출성장율: 당해연도만 계산 (전전연도 데이터가 없어 직전연도는 계산 불가)
-      setRes('r_revenueGrowth_cur', fmtPct(mul100(div(sub(cur.revenue, prev.revenue), prev.revenue))));
-      setRes('r_revenueGrowth_prev', null);
+      // 매출성장율: 직전 연도 데이터가 있어야 계산 가능 (전전연도는 그 이전 해 데이터가 없어 계산 불가)
+      setRes('r_revenueGrowth_cur',   fmtPct(mul100(div(sub(cur.revenue, prev.revenue), prev.revenue))));
+      setRes('r_revenueGrowth_prev',  fmtPct(mul100(div(sub(prev.revenue, prev2.revenue), prev2.revenue))));
+      setRes('r_revenueGrowth_prev2', null);
 
       renderComparisonTable();
     }
@@ -1871,7 +1900,7 @@
 
     document.getElementById('f_resetBtn').addEventListener('click', () => {
       FIN_IDS.forEach(id => {
-        ['cur', 'prev'].forEach(year => {
+        YEARS.forEach(year => {
           const elId = 'f_' + id + '_' + year;
           document.getElementById(elId).value = '';
           localStorage.removeItem(finKey(id, year));

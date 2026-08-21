@@ -1368,19 +1368,11 @@
           <div class="res-value3-wrap"><span class="res-value3 empty" id="r_roe_cur">—</span><span class="res-value3 empty" id="r_roe_prev">—</span><span class="res-value3 empty" id="r_roe_prev2">—</span></div>
         </div>
         <div class="res-row3">
-          <span class="res-label3">재고자산회전율</span>
-          <div class="res-value3-wrap"><span class="res-value3 empty" id="r_invTurnover_cur">—</span><span class="res-value3 empty" id="r_invTurnover_prev">—</span><span class="res-value3 empty" id="r_invTurnover_prev2">—</span></div>
-        </div>
-        <div class="res-row3">
-          <span class="res-label3">(재고자산 소진일수)</span>
+          <span class="res-label3">재고소진일수</span>
           <div class="res-value3-wrap"><span class="res-value3 empty" id="r_invDays_cur">—</span><span class="res-value3 empty" id="r_invDays_prev">—</span><span class="res-value3 empty" id="r_invDays_prev2">—</span></div>
         </div>
         <div class="res-row3">
-          <span class="res-label3">매출채권회전율</span>
-          <div class="res-value3-wrap"><span class="res-value3 empty" id="r_arTurnover_cur">—</span><span class="res-value3 empty" id="r_arTurnover_prev">—</span><span class="res-value3 empty" id="r_arTurnover_prev2">—</span></div>
-        </div>
-        <div class="res-row3">
-          <span class="res-label3">(매출채권 회수일수)</span>
+          <span class="res-label3">매출채권회수기일</span>
           <div class="res-value3-wrap"><span class="res-value3 empty" id="r_arDays_cur">—</span><span class="res-value3 empty" id="r_arDays_prev">—</span><span class="res-value3 empty" id="r_arDays_prev2">—</span></div>
         </div>
       </div>
@@ -1970,11 +1962,9 @@
         setRes('r_roe_' + suffix, fmtPct(mul100(div(f.netIncome, f.equity))));
 
         const invTurnover = div(f.revenue, f.inventory);
-        setRes('r_invTurnover_' + suffix, fmtPct(mul100(invTurnover)));
         setRes('r_invDays_' + suffix, fmtDays(div(365, invTurnover)));
 
         const arTurnover = div(f.revenue, f.receivables);
-        setRes('r_arTurnover_' + suffix, fmtPct(mul100(arTurnover)));
         setRes('r_arDays_' + suffix, fmtDays(div(365, arTurnover)));
       });
 

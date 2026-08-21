@@ -2526,58 +2526,67 @@
       hideMetricTooltip();
     });
 
-    // 모바일: 길게 누르면 설명 표시, 손을 떼거나 밀면 사라짐. 짧게 탭하면 기존처럼 빨간색 강조 토글.
-    const LONG_PRESS_MS = 450;
-    const LONG_PRESS_MOVE_TOLERANCE = 10;
-    let longPressTimer = null;
-    let longPressFired = false;
-    let longPressStartX = 0;
-    let longPressStartY = 0;
+    // 모바일: 빠르게 두 번 탭하면 설명이 떴다가 1초 후 자동으로 사라짐. 한 번만 탭하면
+    // (더블탭 판정 대기시간 300ms 후) 기존처럼 빨간색 강조 토글. 스크롤(손가락 이동)은 무시.
+    const DOUBLE_TAP_MS = 300;
+    const TOOLTIP_AUTO_HIDE_MS = 1000;
+    const TAP_MOVE_TOLERANCE = 10;
 
-    function clearLongPressTimer() {
-      if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; }
+    let touchStartX = 0, touchStartY = 0, touchMoved = false;
+    let lastTapCell = null;
+    let lastTapTime = 0;
+    let singleTapTimer = null;
+    let tooltipHideTimer = null;
+
+    function clearSingleTapTimer() {
+      if (singleTapTimer) { clearTimeout(singleTapTimer); singleTapTimer = null; }
+    }
+
+    function clearTooltipHideTimer() {
+      if (tooltipHideTimer) { clearTimeout(tooltipHideTimer); tooltipHideTimer = null; }
     }
 
     indicatorsTab.addEventListener('touchstart', (e) => {
-      const cell = e.target.closest('.res-value3');
-      clearLongPressTimer();
-      longPressFired = false;
-      if (!cell || cell.classList.contains('empty')) return;
       const touch = e.touches[0];
-      longPressStartX = touch.clientX;
-      longPressStartY = touch.clientY;
-      longPressTimer = setTimeout(() => {
-        longPressFired = true;
-        showMetricTooltip(cell);
-        if (navigator.vibrate) navigator.vibrate(10);
-      }, LONG_PRESS_MS);
+      touchStartX = touch.clientX;
+      touchStartY = touch.clientY;
+      touchMoved = false;
     }, { passive: true });
 
     indicatorsTab.addEventListener('touchmove', (e) => {
-      if (!longPressTimer && !longPressFired) return;
       const touch = e.touches[0];
-      if (Math.abs(touch.clientX - longPressStartX) > LONG_PRESS_MOVE_TOLERANCE ||
-          Math.abs(touch.clientY - longPressStartY) > LONG_PRESS_MOVE_TOLERANCE) {
-        clearLongPressTimer();
-        if (longPressFired) hideMetricTooltip();
-        longPressFired = false;
+      if (Math.abs(touch.clientX - touchStartX) > TAP_MOVE_TOLERANCE ||
+          Math.abs(touch.clientY - touchStartY) > TAP_MOVE_TOLERANCE) {
+        touchMoved = true;
       }
     }, { passive: true });
 
     indicatorsTab.addEventListener('touchend', (e) => {
-      clearLongPressTimer();
-      if (longPressFired) {
-        hideMetricTooltip();
-        e.preventDefault(); // 롱프레스로 이미 처리했으니 뒤이은 합성 click(강조 토글)은 막는다
-      }
-      longPressFired = false;
-    }, { passive: false });
+      const cell = e.target.closest('.res-value3');
+      if (!cell || cell.classList.contains('empty') || touchMoved) { lastTapCell = null; return; }
+      e.preventDefault(); // 합성 click 대신 탭/더블탭을 직접 처리한다
 
-    indicatorsTab.addEventListener('touchcancel', () => {
-      clearLongPressTimer();
-      if (longPressFired) hideMetricTooltip();
-      longPressFired = false;
-    });
+      const now = Date.now();
+      if (lastTapCell === cell && now - lastTapTime < DOUBLE_TAP_MS) {
+        // 더블탭: 예약돼 있던 단일탭(강조 토글)을 취소하고 설명을 보여준다
+        clearSingleTapTimer();
+        lastTapCell = null;
+        lastTapTime = 0;
+        clearTooltipHideTimer();
+        showMetricTooltip(cell);
+        if (navigator.vibrate) navigator.vibrate(10);
+        tooltipHideTimer = setTimeout(hideMetricTooltip, TOOLTIP_AUTO_HIDE_MS);
+        return;
+      }
+
+      lastTapCell = cell;
+      lastTapTime = now;
+      clearSingleTapTimer();
+      singleTapTimer = setTimeout(() => {
+        cell.classList.toggle('selected');
+        lastTapCell = null;
+      }, DOUBLE_TAP_MS);
+    }, { passive: false });
 
     /* ── PWA ── */
     if ('serviceWorker' in navigator) {

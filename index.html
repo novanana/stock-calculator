@@ -125,6 +125,11 @@
       margin: 22px 0 8px;
     }
 
+    .section-label.c-blue   { color: var(--blue); }
+    .section-label.c-green  { color: var(--green); }
+    .section-label.c-orange { color: var(--orange); }
+    .section-label.c-purple { color: var(--purple); }
+
     /* ── Input Card ── */
     .card {
       background: var(--surface);
@@ -594,11 +599,20 @@
       font-size: 14px;
       font-weight: 600;
       color: var(--text);
+      cursor: pointer;
+      user-select: none;
+      border-radius: 4px;
+      transition: color 0.15s;
     }
 
     .res-value3.empty {
       color: var(--border);
       font-weight: 400;
+      cursor: default;
+    }
+
+    .res-value3.selected {
+      color: var(--red);
     }
 
     .res-col-header {
@@ -1249,7 +1263,7 @@
 
       <div class="hint-card" id="i_hint">먼저 '재무제표입력' 탭에서 당해연도·직전연도·전전연도 재무 데이터를 입력하면 아래 지표가 자동으로 계산됩니다.</div>
 
-      <div class="section-label">전체 개요 <span id="i_activeCompanyLabel" class="section-label-sub"></span></div>
+      <div class="section-label c-blue">전체 개요 <span id="i_activeCompanyLabel" class="section-label-sub"></span></div>
       <div class="card">
         <div class="res-row3 res-row3-header">
           <span class="res-label3"></span>
@@ -1285,7 +1299,7 @@
         </div>
       </div>
 
-      <div class="section-label">안정성 관점</div>
+      <div class="section-label c-green">안정성 관점</div>
       <div class="card">
         <div class="res-row3 res-row3-header">
           <span class="res-label3"></span>
@@ -1313,7 +1327,7 @@
         </div>
       </div>
 
-      <div class="section-label">수익·성장성 관점</div>
+      <div class="section-label c-orange">수익·성장성 관점</div>
       <div class="card">
         <div class="res-row3 res-row3-header">
           <span class="res-label3"></span>
@@ -1349,7 +1363,7 @@
         </div>
       </div>
 
-      <div class="section-label">효율성 관점</div>
+      <div class="section-label c-purple">효율성 관점</div>
       <div class="card">
         <div class="res-row3 res-row3-header">
           <span class="res-label3"></span>
@@ -1893,7 +1907,12 @@
       }
     }
 
-    function fmtEok(n)  { return n === null ? null : (Math.round(n / 100 * 100) / 100).toLocaleString('ko-KR', { maximumFractionDigits: 2 }) + '억원'; }
+    function fmtEok(n) {
+      if (n === null) return null;
+      // n은 백만원 단위. 백억원(=10,000백만원) 이상이면 억원, 미만이면 백만원 단위로 표시 (소수점 없음).
+      if (Math.abs(n) >= 10000) return Math.round(n / 100).toLocaleString('ko-KR') + '억원';
+      return Math.round(n).toLocaleString('ko-KR') + '백만원';
+    }
     function fmtPct(n)  { return n === null ? null : n.toFixed(1) + '%'; }
     function fmtDays(n) { return n === null ? null : n.toFixed(1) + '일'; }
     function fmtMonths(n){ return n === null ? null : n.toFixed(1) + '개월'; }
@@ -2351,6 +2370,13 @@
       const btn = document.querySelector(`[data-tab="${savedTab}"]`);
       if (btn) btn.click();
     }
+
+    /* ── Indicator value highlight (click to mark in red) ── */
+    document.getElementById('tab-indicators').addEventListener('click', (e) => {
+      const cell = e.target.closest('.res-value3');
+      if (!cell || cell.classList.contains('empty')) return;
+      cell.classList.toggle('selected');
+    });
 
     /* ── PWA ── */
     if ('serviceWorker' in navigator) {

@@ -601,6 +601,7 @@
       color: var(--text);
       cursor: pointer;
       user-select: none;
+      -webkit-touch-callout: none;
       border-radius: 4px;
       transition: color 0.15s;
     }
@@ -621,6 +622,31 @@
       flex: 1;
       min-width: 0;
       text-align: right;
+    }
+
+    /* ── Metric tooltip ── */
+    .metric-tooltip {
+      position: fixed;
+      z-index: 1000;
+      max-width: 220px;
+      padding: 8px 10px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 400;
+      line-height: 1.4;
+      border-radius: 8px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+      pointer-events: none;
+      opacity: 0;
+      transform: translateY(4px);
+      transition: opacity 0.12s, transform 0.12s;
+    }
+
+    .metric-tooltip.visible {
+      opacity: 1;
+      transform: translateY(0);
     }
 
     .section-label-sub {
@@ -1894,7 +1920,7 @@
       return (a === null || b === null || b === 0) ? null : a / b;
     }
 
-    function setRes(id, val) {
+    function setRes(id, val, raw) {
       const el = document.getElementById(id);
       if (!el) return;
       if (val === null) {
@@ -1905,6 +1931,7 @@
         el.textContent = val;
         el.classList.remove('empty');
       }
+      if (raw !== undefined) el.dataset.raw = (raw === null ? '' : raw);
     }
 
     function fmtEok(n) {
@@ -1966,14 +1993,18 @@
       });
 
       [['cur', cur], ['prev', prev], ['prev2', prev2]].forEach(([suffix, f]) => {
-        setRes('r_currentRatio_' + suffix, fmtPct(mul100(div(f.curAssets, f.curLiabilities))));
-        setRes('r_quickRatio_' + suffix,   fmtPct(mul100(div(sub(f.curAssets, f.inventory), f.curLiabilities))));
-        setRes('r_debtRatio_' + suffix,    fmtPct(mul100(div(f.totalLiabilities, f.equity))));
-        setRes('r_cashScale_' + suffix,    fmtMonths(div(f.cash, div(f.sga, 12))));
+        const currentRatio = mul100(div(f.curAssets, f.curLiabilities));
+        setRes('r_currentRatio_' + suffix, fmtPct(currentRatio), currentRatio);
+        const quickRatio = mul100(div(sub(f.curAssets, f.inventory), f.curLiabilities));
+        setRes('r_quickRatio_' + suffix, fmtPct(quickRatio), quickRatio);
+        const debtRatio = mul100(div(f.totalLiabilities, f.equity));
+        setRes('r_debtRatio_' + suffix, fmtPct(debtRatio), debtRatio);
+        setRes('r_cashScale_' + suffix, fmtMonths(div(f.cash, div(f.sga, 12))));
 
         setRes('r_cogsRatio_' + suffix,   fmtPct(mul100(div(f.cogs, f.revenue))));
         setRes('r_grossMargin_' + suffix, fmtPct(mul100(div(f.grossProfit, f.revenue))));
-        setRes('r_opMargin_' + suffix,    fmtPct(mul100(div(f.operatingProfit, f.revenue))));
+        const opMargin = mul100(div(f.operatingProfit, f.revenue));
+        setRes('r_opMargin_' + suffix, fmtPct(opMargin), opMargin);
         setRes('r_sgaRatio_' + suffix,    fmtPct(mul100(div(f.sga, f.revenue))));
         setRes('r_netMargin_' + suffix,   fmtPct(mul100(div(f.netIncome, f.revenue))));
 
@@ -1988,8 +2019,10 @@
       });
 
       // 매출성장율: 직전 연도 데이터가 있어야 계산 가능 (전전연도는 그 이전 해 데이터가 없어 계산 불가)
-      setRes('r_revenueGrowth_cur',   fmtPct(mul100(div(sub(cur.revenue, prev.revenue), prev.revenue))));
-      setRes('r_revenueGrowth_prev',  fmtPct(mul100(div(sub(prev.revenue, prev2.revenue), prev2.revenue))));
+      const revenueGrowthCur  = mul100(div(sub(cur.revenue, prev.revenue), prev.revenue));
+      const revenueGrowthPrev = mul100(div(sub(prev.revenue, prev2.revenue), prev2.revenue));
+      setRes('r_revenueGrowth_cur',   fmtPct(revenueGrowthCur), revenueGrowthCur);
+      setRes('r_revenueGrowth_prev',  fmtPct(revenueGrowthPrev), revenueGrowthPrev);
       setRes('r_revenueGrowth_prev2', null);
 
       renderComparisonTable();
@@ -2376,6 +2409,174 @@
       const cell = e.target.closest('.res-value3');
       if (!cell || cell.classList.contains('empty')) return;
       cell.classList.toggle('selected');
+    });
+
+    /* ── Indicator value tooltip (hover for guideline description) ── */
+    // '가치평가 지표 설명.numbers' 자료 기준. 구간이 있는 지표는 값에 따라 다른 설명을,
+    // 구간이 없는 지표는 고정된 설명을 표시한다.
+    const METRIC_TOOLTIPS = {
+      cashScale:   { fixed: '기업의 상황이나 특수성에 따라 다름. 보편적으로 3개월 이상' },
+      cogsRatio:   { fixed: '낮을수록 좋음. 동종업계와 비교할것' },
+      grossMargin: { fixed: '높을수록 좋음. 동종업계와 비교할것' },
+      netMargin:   { fixed: '영업이익과 많이 차이난다면 영업외수익과 비용, 주석을 찾아볼것' },
+      roa:         { fixed: '동종업계와 비교할것' },
+      roe:         { fixed: '효율성지표로 제일 많이 봄. 10%이상만 되어도 매우 좋음' },
+      invDays:     { fixed: '재고를 다 소진하는데 며칠이 걸리는지, 동종업계와 비교할것' },
+      arDays:      { fixed: '물건 팔고 돈을 며칠만에 받을수 있는지, 동종업계와 비교할것' },
+
+      currentRatio: { ranges: [
+        { min: 200, exclusive: true, desc: '매우 높은 수준의 안정성' },
+        { min: 100, desc: '높은 수준의 안정성' },
+        { min: 50,  desc: '위험수준은 아니지만 주의' },
+        { min: -Infinity, desc: '위험수준' },
+      ]},
+      quickRatio: { ranges: [
+        { min: 180, exclusive: true, desc: '매우 높은 수준의 안정성' },
+        { min: 80,  desc: '높은 수준의 안정성' },
+        { min: 30,  desc: '위험수준은 아니지만 주의' },
+        { min: -Infinity, desc: '위험수준' },
+      ]},
+      debtRatio: { ranges: [
+        { min: 400, exclusive: true, desc: '매우 위험. 당장 조치가 필요' },
+        { min: 300, desc: '위험하여 조치가 필요' },
+        { min: 200, desc: '약간 위험' },
+        { min: 100, desc: '큰 문제는 없지만 관리 필요' },
+        { min: 50,  desc: '안전한 수준' },
+        { min: 20,  desc: '매우 안전한 수준' },
+        { min: -Infinity, desc: '사실상 무차입 경영에 준하는 안전한 수준' },
+      ]},
+      revenueGrowth: { ranges: [
+        { min: 100, exclusive: true, desc: '로켓에 탄듯한 급격한 성장' },
+        { min: 50,  desc: '고속성장기(특히 스타트업)' },
+        { min: 20,  desc: '상당히 높은 성장률' },
+        { min: 10,  desc: '적당히 높은 성장률' },
+        { min: 5,   desc: '높지는 않지만 양호한 성장률' },
+        { min: 0,   desc: '사업이 안정권에 접어들었거나 정체기' },
+        { min: -Infinity, desc: '마이너스 성장' },
+      ]},
+      opMargin: { ranges: [
+        { min: 20, exclusive: true, desc: '상당히 높은 이익률. 최상위 그룹' },
+        { min: 10, desc: '높은 이익률' },
+        { min: 5,  desc: '적당한 이익률' },
+        { min: 2,  desc: '낮지만 당기순이익을 낼수있는 정도' },
+        { min: -Infinity, desc: '매우 낮은 수준' },
+      ]},
+    };
+
+    function metricTooltipText(metric, rawStr) {
+      const info = METRIC_TOOLTIPS[metric];
+      if (!info) return null;
+      if (info.fixed) return info.fixed;
+      if (rawStr === undefined || rawStr === '') return null;
+      const v = Number(rawStr);
+      if (isNaN(v)) return null;
+      for (const r of info.ranges) {
+        if (r.exclusive ? v > r.min : v >= r.min) return r.desc;
+      }
+      return null;
+    }
+
+    const metricTooltipEl = document.createElement('div');
+    metricTooltipEl.className = 'metric-tooltip';
+    document.body.appendChild(metricTooltipEl);
+
+    function positionMetricTooltip(cell) {
+      const rect = cell.getBoundingClientRect();
+      const ttRect = metricTooltipEl.getBoundingClientRect();
+      let left = rect.left + rect.width / 2 - ttRect.width / 2;
+      left = Math.max(8, Math.min(left, window.innerWidth - ttRect.width - 8));
+      let top = rect.top - ttRect.height - 8;
+      if (top < 8) top = rect.bottom + 8;
+      metricTooltipEl.style.left = left + 'px';
+      metricTooltipEl.style.top = top + 'px';
+    }
+
+    function hideMetricTooltip() {
+      metricTooltipEl.classList.remove('visible');
+    }
+
+    function showMetricTooltip(cell) {
+      const m = cell.id.match(/^r_(.+)_(cur|prev|prev2)$/);
+      if (!m) return;
+      const text = metricTooltipText(m[1], cell.dataset.raw);
+      if (!text) { hideMetricTooltip(); return; }
+      metricTooltipEl.textContent = text;
+      positionMetricTooltip(cell);
+      metricTooltipEl.classList.add('visible');
+    }
+
+    const indicatorsTab = document.getElementById('tab-indicators');
+
+    // PC: 마우스 오버로 표시. 터치 기기에서는 mouseover가 탭 직후 합성 이벤트로 한 번 더
+    // 발생해 툴팁이 눌러붙는 문제가 있어, 터치가 감지되면 이 경로는 끄고 롱프레스로 대체한다.
+    let usingTouch = false;
+    document.addEventListener('touchstart', () => { usingTouch = true; }, { passive: true, once: true });
+
+    indicatorsTab.addEventListener('mouseover', (e) => {
+      if (usingTouch) return;
+      const cell = e.target.closest('.res-value3');
+      if (!cell || cell.classList.contains('empty')) return;
+      showMetricTooltip(cell);
+    });
+    indicatorsTab.addEventListener('mouseout', (e) => {
+      if (usingTouch) return;
+      const cell = e.target.closest('.res-value3');
+      if (!cell) return;
+      if (e.relatedTarget && cell.contains(e.relatedTarget)) return;
+      hideMetricTooltip();
+    });
+
+    // 모바일: 길게 누르면 설명 표시, 손을 떼거나 밀면 사라짐. 짧게 탭하면 기존처럼 빨간색 강조 토글.
+    const LONG_PRESS_MS = 450;
+    const LONG_PRESS_MOVE_TOLERANCE = 10;
+    let longPressTimer = null;
+    let longPressFired = false;
+    let longPressStartX = 0;
+    let longPressStartY = 0;
+
+    function clearLongPressTimer() {
+      if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; }
+    }
+
+    indicatorsTab.addEventListener('touchstart', (e) => {
+      const cell = e.target.closest('.res-value3');
+      clearLongPressTimer();
+      longPressFired = false;
+      if (!cell || cell.classList.contains('empty')) return;
+      const touch = e.touches[0];
+      longPressStartX = touch.clientX;
+      longPressStartY = touch.clientY;
+      longPressTimer = setTimeout(() => {
+        longPressFired = true;
+        showMetricTooltip(cell);
+        if (navigator.vibrate) navigator.vibrate(10);
+      }, LONG_PRESS_MS);
+    }, { passive: true });
+
+    indicatorsTab.addEventListener('touchmove', (e) => {
+      if (!longPressTimer && !longPressFired) return;
+      const touch = e.touches[0];
+      if (Math.abs(touch.clientX - longPressStartX) > LONG_PRESS_MOVE_TOLERANCE ||
+          Math.abs(touch.clientY - longPressStartY) > LONG_PRESS_MOVE_TOLERANCE) {
+        clearLongPressTimer();
+        if (longPressFired) hideMetricTooltip();
+        longPressFired = false;
+      }
+    }, { passive: true });
+
+    indicatorsTab.addEventListener('touchend', (e) => {
+      clearLongPressTimer();
+      if (longPressFired) {
+        hideMetricTooltip();
+        e.preventDefault(); // 롱프레스로 이미 처리했으니 뒤이은 합성 click(강조 토글)은 막는다
+      }
+      longPressFired = false;
+    }, { passive: false });
+
+    indicatorsTab.addEventListener('touchcancel', () => {
+      clearLongPressTimer();
+      if (longPressFired) hideMetricTooltip();
+      longPressFired = false;
     });
 
     /* ── PWA ── */

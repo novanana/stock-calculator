@@ -1725,6 +1725,14 @@
           <div class="res-value3-wrap"><span class="res-value3 empty" id="r_revenueGrowth_cur">—</span><span class="res-value3 empty" id="r_revenueGrowth_prev">—</span><span class="res-value3 empty" id="r_revenueGrowth_prev2">—</span></div>
         </div>
         <div class="res-row3">
+          <span class="res-label3">영업이익성장률</span>
+          <div class="res-value3-wrap"><span class="res-value3 empty" id="r_opIncomeGrowth_cur">—</span><span class="res-value3 empty" id="r_opIncomeGrowth_prev">—</span><span class="res-value3 empty" id="r_opIncomeGrowth_prev2">—</span></div>
+        </div>
+        <div class="res-row3">
+          <span class="res-label3">영업이익성장가속도(델타)</span>
+          <div class="res-value3-wrap"><span class="res-value3 empty" id="r_opIncomeGrowthDelta_cur">—</span><span class="res-value3 empty" id="r_opIncomeGrowthDelta_prev">—</span><span class="res-value3 empty" id="r_opIncomeGrowthDelta_prev2">—</span></div>
+        </div>
+        <div class="res-row3">
           <span class="res-label3">원가율</span>
           <div class="res-value3-wrap"><span class="res-value3 empty" id="r_cogsRatio_cur">—</span><span class="res-value3 empty" id="r_cogsRatio_prev">—</span><span class="res-value3 empty" id="r_cogsRatio_prev2">—</span></div>
         </div>
@@ -2376,6 +2384,7 @@
       return Math.round(n).toLocaleString('ko-KR') + '백만원';
     }
     function fmtPct(n)  { return n === null ? null : n.toFixed(1) + '%'; }
+    function fmtPctPoint(n) { return n === null ? null : n.toFixed(1) + '%p'; }
     function fmtDays(n) { return n === null ? null : n.toFixed(1) + '일'; }
     function fmtMonths(n){ return n === null ? null : n.toFixed(1) + '개월'; }
     function sub(a, b) { return (a === null || b === null) ? null : a - b; }
@@ -2459,6 +2468,19 @@
       setRes('r_revenueGrowth_cur',   fmtPct(revenueGrowthCur), revenueGrowthCur);
       setRes('r_revenueGrowth_prev',  fmtPct(revenueGrowthPrev), revenueGrowthPrev);
       setRes('r_revenueGrowth_prev2', null);
+
+      // 영업이익성장률: 매출성장율과 동일한 방식
+      const opIncomeGrowthCur  = mul100(div(sub(cur.operatingProfit, prev.operatingProfit), prev.operatingProfit));
+      const opIncomeGrowthPrev = mul100(div(sub(prev.operatingProfit, prev2.operatingProfit), prev2.operatingProfit));
+      setRes('r_opIncomeGrowth_cur',   fmtPct(opIncomeGrowthCur), opIncomeGrowthCur);
+      setRes('r_opIncomeGrowth_prev',  fmtPct(opIncomeGrowthPrev), opIncomeGrowthPrev);
+      setRes('r_opIncomeGrowth_prev2', null);
+
+      // 영업이익성장가속도(델타) = 당해 성장률 − 직전 성장률(%p). 성장률 두 해가 모두 있어야 계산되므로 당해만 산출
+      const opIncomeGrowthDelta = sub(opIncomeGrowthCur, opIncomeGrowthPrev);
+      setRes('r_opIncomeGrowthDelta_cur',   fmtPctPoint(opIncomeGrowthDelta), opIncomeGrowthDelta);
+      setRes('r_opIncomeGrowthDelta_prev',  null);
+      setRes('r_opIncomeGrowthDelta_prev2', null);
 
       renderComparisonTable();
     }
@@ -2895,6 +2917,21 @@
         { min: 5,  desc: '적당한 이익률' },
         { min: 2,  desc: '낮지만 당기순이익을 낼수있는 정도' },
         { min: -Infinity, desc: '매우 낮은 수준' },
+      ]},
+      opIncomeGrowth: { ranges: [
+        { min: 100, exclusive: true, desc: '이익이 폭발적으로 성장하는 구간' },
+        { min: 50,  desc: '매우 높은 이익 성장률' },
+        { min: 20,  desc: '상당히 높은 이익 성장률' },
+        { min: 10,  desc: '적당히 높은 이익 성장률' },
+        { min: 5,   desc: '높지는 않지만 양호한 이익 성장률' },
+        { min: 0,   desc: '이익이 정체 국면' },
+        { min: -Infinity, desc: '영업이익 역성장' },
+      ]},
+      opIncomeGrowthDelta: { ranges: [
+        { min: 60, exclusive: true, desc: '수익을 즐기며 보유하라' },
+        { min: 0,   desc: '순항중, 추세 이탈 여부만 관찰하라' },
+        { min: -30, desc: '추세 하락시작, 비중 조절을 검토' },
+        { min: -Infinity, desc: '추세 정지 신호, 보수적 관점으로 전환하라' },
       ]},
     };
 

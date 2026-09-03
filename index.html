@@ -786,6 +786,8 @@
 
     .compare-table th.active-col, .compare-table td.active-col { color: var(--green); }
 
+    .compare-company-btn { cursor: pointer; }
+
     .hint-card {
       background: var(--blue-dim);
       border: 1px solid var(--blue-border);
@@ -1177,6 +1179,139 @@
       max-height: 100%;
       border-radius: 10px;
     }
+
+    /* ── Watchlist (관심종목) ── */
+    .watch-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .watch-card {
+      background: var(--surface);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .watch-card-head {
+      padding: 14px 16px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .watch-card-title-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .watch-symbol {
+      font-size: 16px;
+      font-weight: 700;
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .watch-weeks-badge {
+      flex-shrink: 0;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 6px;
+      color: var(--blue);
+      background: var(--blue-dim);
+    }
+
+    .watch-card-sub {
+      font-size: 12px;
+      color: var(--text3);
+    }
+
+    .watch-stats-row {
+      display: flex;
+      padding: 4px 16px 12px;
+      gap: 8px;
+    }
+
+    .watch-stat {
+      flex: 1;
+      min-width: 0;
+      background: var(--surface2);
+      border-radius: 10px;
+      padding: 8px 6px;
+      text-align: center;
+    }
+
+    .watch-stat-label {
+      display: block;
+      font-size: 10.5px;
+      color: var(--text3);
+      margin-bottom: 3px;
+      white-space: nowrap;
+    }
+
+    .watch-stat-value {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .watch-stat-value.pos { color: var(--green); }
+    .watch-stat-value.neg { color: var(--red); }
+
+    .watch-opinion {
+      padding: 0 16px 12px;
+      font-size: 13px;
+      color: var(--text);
+      line-height: 1.5;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .watch-opinion.empty { color: var(--border); }
+
+    .watch-actions {
+      display: flex;
+      gap: 8px;
+      padding: 0 16px 14px;
+    }
+
+    .watch-actions button {
+      flex: 1;
+      border: none;
+      background: var(--surface2);
+      color: var(--text3);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 9px;
+      border-radius: 8px;
+      font-family: inherit;
+      cursor: pointer;
+    }
+
+    .watch-actions button.watch-del-btn { color: var(--red); }
+
+    .watch-snapshot-body {
+      display: none;
+      border-top: 1px solid var(--border);
+      padding: 4px 16px 14px;
+    }
+
+    .watch-snapshot-body.visible { display: block; }
+
+    .watch-snapshot-body .section-label { margin: 14px 0 8px; }
+    .watch-snapshot-body .section-label:first-child { margin-top: 14px; }
+
+    .watch-form-card {
+      background: var(--surface);
+      border-radius: 16px;
+      padding: 4px 16px 16px;
+      margin-bottom: 14px;
+    }
   </style>
 </head>
 <body>
@@ -1187,6 +1322,7 @@
   <div class="tab-bar">
     <div class="tab-row">
       <button class="tab" data-tab="trades">매매일지</button>
+      <button class="tab" data-tab="watchlist">관심종목</button>
     </div>
     <div class="tab-row">
       <button class="tab active" data-tab="accum">매집비율</button>
@@ -1646,6 +1782,10 @@
 
       <div class="hint-card" id="i_hint">먼저 '재무제표입력' 탭에서 당해연도·직전연도·전전연도 재무 데이터를 입력하면 아래 지표가 자동으로 계산됩니다.</div>
 
+      <div class="trade-toolbar" style="margin: 10px 0 4px;">
+        <button type="button" class="btn-primary" id="i_addToWatchlistBtn">★ 관심종목에 추가</button>
+      </div>
+
       <div class="section-label c-blue">전체 개요 <span id="i_activeCompanyLabel" class="section-label-sub"></span></div>
       <div class="card">
         <div class="res-row3 res-row3-header">
@@ -1858,6 +1998,39 @@
 
       <div class="trade-lightbox" id="tr_lightbox">
         <img id="tr_lightboxImg" src="" alt="">
+      </div>
+
+    </section>
+
+    <!-- ───────── Tab 10: 관심종목 ───────── -->
+    <section id="tab-watchlist" class="tab-content">
+
+      <div class="card watch-form-card" id="wl_formCard" style="display:none;">
+        <div class="input-item">
+          <div class="input-label-row"><label for="wl_symbol">종목명</label></div>
+          <input type="text" id="wl_symbol" autocomplete="off" autocorrect="off" spellcheck="false">
+        </div>
+        <div class="input-item">
+          <div class="input-label-row"><label for="wl_alignDate">정배열 완성일</label></div>
+          <input type="date" id="wl_alignDate">
+        </div>
+        <div class="input-item">
+          <div class="input-label-row"><label for="wl_opinion">나의 의견</label></div>
+          <textarea class="trade-reason-input" id="wl_opinion" rows="4"
+                    placeholder="이 종목을 왜 관심있게 보는지, 앞으로 무엇을 확인해야 하는지 적어두세요"></textarea>
+        </div>
+        <div class="trade-form-actions">
+          <button type="button" class="btn-ghost" id="wl_cancelBtn">취소</button>
+          <button type="button" class="btn-primary" id="wl_saveBtn">저장</button>
+        </div>
+      </div>
+
+      <input type="text" class="trade-search" id="wl_search" placeholder="종목명 검색"
+             autocomplete="off" autocorrect="off" spellcheck="false">
+
+      <div class="watch-list" id="wl_list"></div>
+      <div class="trade-empty" id="wl_empty" style="display:none;">
+        아직 담은 관심종목이 없어요.<br>'가치평가' 탭에서 종목을 선택하고 ‘★ 관심종목에 추가’ 버튼을 눌러보세요.
       </div>
 
     </section>
@@ -2423,6 +2596,73 @@
       wrap.innerHTML = html;
     }
 
+    // 재무 데이터(cur/prev/prev2) 한 세트로부터 가치평가 탭의 모든 지표를 계산한다.
+    // calcIndicators()가 화면(활성 기업)에 쓰는 것과, 관심종목 스냅샷이 기업별로 미리 계산해두는 것 둘 다 이 함수를 공유한다.
+    function computeIndicatorSet(cur, prev, prev2) {
+      const out = {};
+      const put = (id, suffix, raw, text) => { out[id] = out[id] || {}; out[id][suffix] = { raw, text }; };
+
+      ['totalAssets', 'totalLiabilities', 'equity', 'revenue', 'operatingProfit', 'netIncome'].forEach(id => {
+        put(id, 'cur',   cur[id],   fmtEok(cur[id]));
+        put(id, 'prev',  prev[id],  fmtEok(prev[id]));
+        put(id, 'prev2', prev2[id], fmtEok(prev2[id]));
+      });
+
+      [['cur', cur], ['prev', prev], ['prev2', prev2]].forEach(([suffix, f]) => {
+        const currentRatio = mul100(div(f.curAssets, f.curLiabilities));
+        put('currentRatio', suffix, currentRatio, fmtPct(currentRatio));
+        const quickRatio = mul100(div(sub(f.curAssets, f.inventory), f.curLiabilities));
+        put('quickRatio', suffix, quickRatio, fmtPct(quickRatio));
+        const debtRatio = mul100(div(f.totalLiabilities, f.equity));
+        put('debtRatio', suffix, debtRatio, fmtPct(debtRatio));
+        const cashScale = div(f.cash, div(f.sga, 12));
+        put('cashScale', suffix, cashScale, fmtMonths(cashScale));
+
+        const cogsRatio = mul100(div(f.cogs, f.revenue));
+        put('cogsRatio', suffix, cogsRatio, fmtPct(cogsRatio));
+        const grossMargin = mul100(div(f.grossProfit, f.revenue));
+        put('grossMargin', suffix, grossMargin, fmtPct(grossMargin));
+        const opMargin = mul100(div(f.operatingProfit, f.revenue));
+        put('opMargin', suffix, opMargin, fmtPct(opMargin));
+        const sgaRatio = mul100(div(f.sga, f.revenue));
+        put('sgaRatio', suffix, sgaRatio, fmtPct(sgaRatio));
+        const netMargin = mul100(div(f.netIncome, f.revenue));
+        put('netMargin', suffix, netMargin, fmtPct(netMargin));
+
+        const roa = mul100(div(f.netIncome, f.totalAssets));
+        put('roa', suffix, roa, fmtPct(roa));
+        const roe = mul100(div(f.netIncome, f.equity));
+        put('roe', suffix, roe, fmtPct(roe));
+
+        const invDays = div(365, div(f.revenue, f.inventory));
+        put('invDays', suffix, invDays, fmtDays(invDays));
+        const arDays = div(365, div(f.revenue, f.receivables));
+        put('arDays', suffix, arDays, fmtDays(arDays));
+      });
+
+      // 매출성장율: 직전 연도 데이터가 있어야 계산 가능 (전전연도는 그 이전 해 데이터가 없어 계산 불가)
+      const revenueGrowthCur  = mul100(div(sub(cur.revenue, prev.revenue), prev.revenue));
+      const revenueGrowthPrev = mul100(div(sub(prev.revenue, prev2.revenue), prev2.revenue));
+      put('revenueGrowth', 'cur',   revenueGrowthCur,  fmtPct(revenueGrowthCur));
+      put('revenueGrowth', 'prev',  revenueGrowthPrev, fmtPct(revenueGrowthPrev));
+      put('revenueGrowth', 'prev2', null, null);
+
+      // 영업이익성장률: 매출성장율과 동일한 방식
+      const opIncomeGrowthCur  = mul100(div(sub(cur.operatingProfit, prev.operatingProfit), prev.operatingProfit));
+      const opIncomeGrowthPrev = mul100(div(sub(prev.operatingProfit, prev2.operatingProfit), prev2.operatingProfit));
+      put('opIncomeGrowth', 'cur',   opIncomeGrowthCur,  fmtPct(opIncomeGrowthCur));
+      put('opIncomeGrowth', 'prev',  opIncomeGrowthPrev, fmtPct(opIncomeGrowthPrev));
+      put('opIncomeGrowth', 'prev2', null, null);
+
+      // 영업이익성장가속도(델타) = 당해 성장률 − 직전 성장률(%p). 성장률 두 해가 모두 있어야 계산되므로 당해만 산출
+      const opIncomeGrowthDelta = sub(opIncomeGrowthCur, opIncomeGrowthPrev);
+      put('opIncomeGrowthDelta', 'cur',   opIncomeGrowthDelta, fmtPctPoint(opIncomeGrowthDelta));
+      put('opIncomeGrowthDelta', 'prev',  null, null);
+      put('opIncomeGrowthDelta', 'prev2', null, null);
+
+      return out;
+    }
+
     function calcIndicators() {
       const { cur, prev, prev2 } = getFin();
       const hasAny = FIN_IDS.some(id => cur[id] !== null || prev[id] !== null || prev2[id] !== null);
@@ -2430,57 +2670,13 @@
       const activeLabel = document.getElementById('i_activeCompanyLabel');
       if (activeLabel) activeLabel.textContent = '· ' + companyName(finActiveCompany);
 
-      ['totalAssets', 'totalLiabilities', 'equity', 'revenue', 'operatingProfit', 'netIncome'].forEach(id => {
-        setRes('r_' + id + '_cur',   fmtEok(cur[id]));
-        setRes('r_' + id + '_prev',  fmtEok(prev[id]));
-        setRes('r_' + id + '_prev2', fmtEok(prev2[id]));
+      const set = computeIndicatorSet(cur, prev, prev2);
+      Object.keys(set).forEach(id => {
+        ['cur', 'prev', 'prev2'].forEach(suffix => {
+          const { raw, text } = set[id][suffix];
+          setRes('r_' + id + '_' + suffix, text, raw);
+        });
       });
-
-      [['cur', cur], ['prev', prev], ['prev2', prev2]].forEach(([suffix, f]) => {
-        const currentRatio = mul100(div(f.curAssets, f.curLiabilities));
-        setRes('r_currentRatio_' + suffix, fmtPct(currentRatio), currentRatio);
-        const quickRatio = mul100(div(sub(f.curAssets, f.inventory), f.curLiabilities));
-        setRes('r_quickRatio_' + suffix, fmtPct(quickRatio), quickRatio);
-        const debtRatio = mul100(div(f.totalLiabilities, f.equity));
-        setRes('r_debtRatio_' + suffix, fmtPct(debtRatio), debtRatio);
-        setRes('r_cashScale_' + suffix, fmtMonths(div(f.cash, div(f.sga, 12))));
-
-        setRes('r_cogsRatio_' + suffix,   fmtPct(mul100(div(f.cogs, f.revenue))));
-        setRes('r_grossMargin_' + suffix, fmtPct(mul100(div(f.grossProfit, f.revenue))));
-        const opMargin = mul100(div(f.operatingProfit, f.revenue));
-        setRes('r_opMargin_' + suffix, fmtPct(opMargin), opMargin);
-        setRes('r_sgaRatio_' + suffix,    fmtPct(mul100(div(f.sga, f.revenue))));
-        setRes('r_netMargin_' + suffix,   fmtPct(mul100(div(f.netIncome, f.revenue))));
-
-        setRes('r_roa_' + suffix, fmtPct(mul100(div(f.netIncome, f.totalAssets))));
-        setRes('r_roe_' + suffix, fmtPct(mul100(div(f.netIncome, f.equity))));
-
-        const invTurnover = div(f.revenue, f.inventory);
-        setRes('r_invDays_' + suffix, fmtDays(div(365, invTurnover)));
-
-        const arTurnover = div(f.revenue, f.receivables);
-        setRes('r_arDays_' + suffix, fmtDays(div(365, arTurnover)));
-      });
-
-      // 매출성장율: 직전 연도 데이터가 있어야 계산 가능 (전전연도는 그 이전 해 데이터가 없어 계산 불가)
-      const revenueGrowthCur  = mul100(div(sub(cur.revenue, prev.revenue), prev.revenue));
-      const revenueGrowthPrev = mul100(div(sub(prev.revenue, prev2.revenue), prev2.revenue));
-      setRes('r_revenueGrowth_cur',   fmtPct(revenueGrowthCur), revenueGrowthCur);
-      setRes('r_revenueGrowth_prev',  fmtPct(revenueGrowthPrev), revenueGrowthPrev);
-      setRes('r_revenueGrowth_prev2', null);
-
-      // 영업이익성장률: 매출성장율과 동일한 방식
-      const opIncomeGrowthCur  = mul100(div(sub(cur.operatingProfit, prev.operatingProfit), prev.operatingProfit));
-      const opIncomeGrowthPrev = mul100(div(sub(prev.operatingProfit, prev2.operatingProfit), prev2.operatingProfit));
-      setRes('r_opIncomeGrowth_cur',   fmtPct(opIncomeGrowthCur), opIncomeGrowthCur);
-      setRes('r_opIncomeGrowth_prev',  fmtPct(opIncomeGrowthPrev), opIncomeGrowthPrev);
-      setRes('r_opIncomeGrowth_prev2', null);
-
-      // 영업이익성장가속도(델타) = 당해 성장률 − 직전 성장률(%p). 성장률 두 해가 모두 있어야 계산되므로 당해만 산출
-      const opIncomeGrowthDelta = sub(opIncomeGrowthCur, opIncomeGrowthPrev);
-      setRes('r_opIncomeGrowthDelta_cur',   fmtPctPoint(opIncomeGrowthDelta), opIncomeGrowthDelta);
-      setRes('r_opIncomeGrowthDelta_prev',  null);
-      setRes('r_opIncomeGrowthDelta_prev2', null);
 
       renderComparisonTable();
     }
@@ -3437,6 +3633,348 @@
       });
 
       dateInput.value = todayStr();
+      render();
+    })();
+
+    /* ── 관심종목 (Watchlist) ── */
+    (function () {
+      const WATCHLIST_KEY = 'sc_watchlist';
+
+      // 가치평가 탭의 4개 섹션과 동일한 구성. 스냅샷 저장/재현에 그대로 사용한다.
+      const INDICATOR_SECTIONS = [
+        { label: '전체 개요', color: 'c-blue', items: [
+          { id: 'totalAssets',     label: '총자산' },
+          { id: 'totalLiabilities', label: '총부채' },
+          { id: 'equity',          label: '자본' },
+          { id: 'revenue',         label: '매출' },
+          { id: 'operatingProfit', label: '영업이익' },
+          { id: 'netIncome',       label: '당기순이익' },
+        ]},
+        { label: '안정성 관점', color: 'c-green', items: [
+          { id: 'currentRatio', label: '유동비율' },
+          { id: 'quickRatio',   label: '당좌비율' },
+          { id: 'debtRatio',    label: '부채비율' },
+          { id: 'cashScale',    label: '현금규모' },
+        ]},
+        { label: '수익·성장성 관점', color: 'c-orange', items: [
+          { id: 'revenueGrowth',        label: '매출성장율' },
+          { id: 'opIncomeGrowth',       label: '영업이익성장률' },
+          { id: 'opIncomeGrowthDelta',  label: '영업이익성장가속도(델타)' },
+          { id: 'cogsRatio',    label: '원가율' },
+          { id: 'grossMargin',  label: '매출총이익율' },
+          { id: 'opMargin',     label: '영업이익율' },
+          { id: 'sgaRatio',     label: '관리비율' },
+          { id: 'netMargin',    label: '당기순이익율' },
+        ]},
+        { label: '효율성 관점', color: 'c-purple', items: [
+          { id: 'roa',     label: '총자산이익율' },
+          { id: 'roe',     label: '자기자본이익율' },
+          { id: 'invDays', label: '재고소진일수' },
+          { id: 'arDays',  label: '매출채권회수기일' },
+        ]},
+      ];
+
+      function loadWatchlist() {
+        try {
+          const arr = JSON.parse(localStorage.getItem(WATCHLIST_KEY) || '[]');
+          return Array.isArray(arr) ? arr : [];
+        } catch (e) { return []; }
+      }
+
+      function saveWatchlist() {
+        try {
+          localStorage.setItem(WATCHLIST_KEY, JSON.stringify(watchlist));
+          return true;
+        } catch (e) {
+          alert('저장 공간이 부족합니다. 매매일지의 사진을 정리한 뒤 다시 시도해주세요.');
+          return false;
+        }
+      }
+
+      function makeId() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
+
+      function todayStr() {
+        const d = new Date();
+        return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+      }
+
+      function escapeHtml(s) {
+        return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+      }
+
+      let watchlist = loadWatchlist();
+      let searchText = '';
+      let editingId = null;
+      const expandedIds = new Set();
+      const selectedCompanyIdx = new Map(); // entry.id -> 종합비교표에서 선택된 기업의 index (기본값: 추가 당시 활성 기업)
+
+      const formCard    = document.getElementById('wl_formCard');
+      const symbolInput = document.getElementById('wl_symbol');
+      const dateInput2  = document.getElementById('wl_alignDate');
+      const opinionInput = document.getElementById('wl_opinion');
+      const cancelBtn   = document.getElementById('wl_cancelBtn');
+      const saveBtn     = document.getElementById('wl_saveBtn');
+      const listEl      = document.getElementById('wl_list');
+      const emptyEl     = document.getElementById('wl_empty');
+      const searchEl    = document.getElementById('wl_search');
+
+      function openForm(entry) {
+        editingId = entry.id;
+        symbolInput.value = entry.symbol;
+        dateInput2.value  = entry.alignDate || '';
+        opinionInput.value = entry.opinion || '';
+        formCard.style.display = '';
+        formCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        opinionInput.focus();
+      }
+
+      function closeForm() {
+        formCard.style.display = 'none';
+        editingId = null;
+      }
+
+      cancelBtn.addEventListener('click', closeForm);
+
+      saveBtn.addEventListener('click', () => {
+        const entry = watchlist.find(w => w.id === editingId);
+        if (!entry) { closeForm(); return; }
+        const backup = { ...entry };
+        entry.symbol = symbolInput.value.trim() || entry.symbol;
+        entry.alignDate = dateInput2.value;
+        entry.opinion = opinionInput.value.trim();
+        if (!saveWatchlist()) { Object.assign(entry, backup); return; }
+        closeForm();
+        render();
+      });
+
+      searchEl.addEventListener('input', () => {
+        searchText = searchEl.value.trim().toLowerCase();
+        render();
+      });
+
+      function weeksElapsed(alignDate) {
+        if (!alignDate) return null;
+        const start = new Date(alignDate + 'T00:00:00');
+        const now = new Date(todayStr() + 'T00:00:00');
+        return Math.floor(Math.round((now - start) / 86400000) / 7);
+      }
+
+      function renderSnapshot(snapshot) {
+        return INDICATOR_SECTIONS.map(section => {
+          const rows = section.items.map(item => {
+            const v = (snapshot && snapshot[item.id]) || { cur: '—', prev: '—', prev2: '—' };
+            return `
+              <div class="res-row3">
+                <span class="res-label3">${item.label}</span>
+                <div class="res-value3-wrap">
+                  <span class="res-value3${v.cur   === '—' ? ' empty' : ''}">${v.cur}</span>
+                  <span class="res-value3${v.prev  === '—' ? ' empty' : ''}">${v.prev}</span>
+                  <span class="res-value3${v.prev2 === '—' ? ' empty' : ''}">${v.prev2}</span>
+                </div>
+              </div>`;
+          }).join('');
+          return `
+            <div class="section-label ${section.color}">${section.label}</div>
+            <div class="card">
+              <div class="res-row3 res-row3-header">
+                <span class="res-label3"></span>
+                <div class="res-value3-wrap">
+                  <span class="res-col-header">당해연도</span>
+                  <span class="res-col-header">직전연도</span>
+                  <span class="res-col-header">전전연도</span>
+                </div>
+              </div>
+              ${rows}
+            </div>`;
+        }).join('');
+      }
+
+      function renderCompareSnapshot(entry) {
+        const cs = entry.compareSnapshot;
+        if (!cs) return '';
+        const selIdx = selectedCompanyIdx.has(entry.id)
+          ? selectedCompanyIdx.get(entry.id)
+          : cs.companies.findIndex(c => c.active);
+
+        let html = `<div class="section-label" style="margin-top:14px;">종합비교 (추가 당시) · 기업명을 탭하면 상세 지표를 볼 수 있어요</div>
+          <div class="compare-card"><div class="compare-scroll"><table class="compare-table"><thead><tr><th></th>`;
+        cs.companies.forEach((c, i) => {
+          html += `<th class="compare-company-btn${i === selIdx ? ' active-col' : ''}" data-entry-id="${entry.id}" data-idx="${i}">${escapeHtml(c.name)}</th>`;
+        });
+        html += '</tr></thead><tbody>';
+        cs.rows.forEach(row => {
+          html += `<tr><td class="compare-label">${row.label}</td>`;
+          row.vals.forEach((val, i) => {
+            html += `<td class="${i === selIdx ? 'active-col' : ''}">${val}</td>`;
+          });
+          html += '</tr>';
+        });
+        html += '</tbody></table></div></div>';
+
+        html += `<div class="section-label" style="margin-top:14px;">가치평가 상세 · ${escapeHtml(cs.companies[selIdx].name)}</div>`;
+        html += renderSnapshot(cs.companies[selIdx].fullSnapshot);
+        return html;
+      }
+
+      function signClass(raw) { return raw === null ? '' : (raw >= 0 ? 'pos' : 'neg'); }
+
+      function renderCard(entry) {
+        const expanded = expandedIds.has(entry.id);
+        const weeks = weeksElapsed(entry.alignDate);
+
+        return `
+          <div class="watch-card" data-id="${entry.id}">
+            <div class="watch-card-head">
+              <div class="watch-card-title-row">
+                <span class="watch-symbol">${escapeHtml(entry.symbol)}</span>
+                ${weeks !== null ? `<span class="watch-weeks-badge">${weeks}주 경과</span>` : ''}
+              </div>
+              <div class="watch-card-sub">${entry.alignDate ? '정배열 완성일 ' + entry.alignDate : '정배열 완성일 미입력'}</div>
+            </div>
+            <div class="watch-stats-row">
+              <div class="watch-stat">
+                <span class="watch-stat-label">전년 영업이익성장률</span>
+                <span class="watch-stat-value ${signClass(entry.growthPrevRaw)}">${entry.growthPrevText}</span>
+              </div>
+              <div class="watch-stat">
+                <span class="watch-stat-label">금년 영업이익성장률</span>
+                <span class="watch-stat-value ${signClass(entry.growthCurRaw)}">${entry.growthCurText}</span>
+              </div>
+              <div class="watch-stat">
+                <span class="watch-stat-label">성장가속도(델타)</span>
+                <span class="watch-stat-value ${signClass(entry.deltaRaw)}">${entry.deltaText}</span>
+              </div>
+            </div>
+            <div class="watch-opinion${entry.opinion ? '' : ' empty'}">${entry.opinion ? escapeHtml(entry.opinion) : '나의 의견이 아직 없어요'}</div>
+            <div class="watch-actions">
+              <button type="button" class="watch-snapshot-btn" data-id="${entry.id}">가치평가 ${expanded ? '접기' : '보기'}</button>
+              <button type="button" class="watch-edit-btn" data-id="${entry.id}">수정</button>
+              <button type="button" class="watch-del-btn" data-id="${entry.id}">삭제</button>
+            </div>
+            <div class="watch-snapshot-body${expanded ? ' visible' : ''}">
+              ${expanded ? (entry.compareSnapshot ? renderCompareSnapshot(entry) : renderSnapshot(entry.snapshot)) : ''}
+            </div>
+          </div>
+        `;
+      }
+
+      function render() {
+        const filtered = watchlist
+          .filter(w => !searchText || w.symbol.toLowerCase().includes(searchText))
+          .sort((a, b) => b.addedAt - a.addedAt);
+
+        emptyEl.style.display = filtered.length ? 'none' : '';
+        listEl.innerHTML = filtered.map(renderCard).join('');
+
+        listEl.querySelectorAll('.watch-snapshot-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const id = btn.dataset.id;
+            if (expandedIds.has(id)) expandedIds.delete(id); else expandedIds.add(id);
+            render();
+          });
+        });
+        listEl.querySelectorAll('.compare-company-btn').forEach(th => {
+          th.addEventListener('click', () => {
+            selectedCompanyIdx.set(th.dataset.entryId, Number(th.dataset.idx));
+            render();
+          });
+        });
+        listEl.querySelectorAll('.watch-edit-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const entry = watchlist.find(w => w.id === btn.dataset.id);
+            if (entry) openForm(entry);
+          });
+        });
+        listEl.querySelectorAll('.watch-del-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            if (!confirm('이 관심종목 기록을 삭제할까요?')) return;
+            watchlist = watchlist.filter(w => w.id !== btn.dataset.id);
+            saveWatchlist();
+            render();
+          });
+        });
+      }
+
+      function txt(t) { return t === null ? '—' : t; }
+
+      // id별 계산 세트(computeIndicatorSet 결과)를 관심종목 스냅샷 형태({id:{cur,prev,prev2}} 표시 문자열)로 변환
+      function toDisplaySnapshot(set) {
+        const snap = {};
+        INDICATOR_SECTIONS.forEach(section => {
+          section.items.forEach(item => {
+            snap[item.id] = {
+              cur:   txt(set[item.id].cur.text),
+              prev:  txt(set[item.id].prev.text),
+              prev2: txt(set[item.id].prev2.text),
+            };
+          });
+        });
+        return snap;
+      }
+
+      // 가치평가 탭의 '★ 관심종목에 추가' 버튼: 선택된 기업(및 비교 중인 다른 기업 전체)의 계산 결과를 스냅샷으로 저장한다
+      const addBtn = document.getElementById('i_addToWatchlistBtn');
+      if (addBtn) {
+        addBtn.addEventListener('click', () => {
+          const companySets = {}; // 1-based company index -> computeIndicatorSet 결과 (기업별로 한 번만 계산)
+          function setFor(n) {
+            if (!companySets[n]) {
+              const f = getFinForCompany(n);
+              companySets[n] = computeIndicatorSet(f.cur, f.prev, f.prev2);
+            }
+            return companySets[n];
+          }
+
+          const activeSet = setFor(finActiveCompany);
+          const snapshot = toDisplaySnapshot(activeSet);
+
+          // 다른 기업과 비교 중이면(2개 이상 등록) 종합비교표와 기업별 상세 가치평가도 함께 스냅샷으로 저장
+          let compareSnapshot = null;
+          if (finCompanyCount >= 2) {
+            compareSnapshot = { companies: [], rows: [] };
+            for (let i = 1; i <= finCompanyCount; i++) {
+              compareSnapshot.companies.push({
+                name: companyName(i),
+                active: i === finActiveCompany,
+                fullSnapshot: toDisplaySnapshot(setFor(i)),
+              });
+            }
+            COMPARE_ROWS.forEach(row => {
+              const vals = [];
+              for (let i = 1; i <= finCompanyCount; i++) {
+                const v = row.calc(getFinForCompany(i).cur);
+                vals.push(v === null ? '—' : v);
+              }
+              compareSnapshot.rows.push({ label: row.label, vals });
+            });
+          }
+
+          const entry = {
+            id: makeId(),
+            symbol: companyName(finActiveCompany),
+            alignDate: '',
+            opinion: '',
+            growthPrevText: txt(activeSet.opIncomeGrowth.prev.text),
+            growthCurText:  txt(activeSet.opIncomeGrowth.cur.text),
+            deltaText:      txt(activeSet.opIncomeGrowthDelta.cur.text),
+            growthPrevRaw: activeSet.opIncomeGrowth.prev.raw,
+            growthCurRaw:  activeSet.opIncomeGrowth.cur.raw,
+            deltaRaw:      activeSet.opIncomeGrowthDelta.cur.raw,
+            snapshot,
+            compareSnapshot,
+            addedAt: Date.now(),
+          };
+
+          watchlist.push(entry);
+          if (!saveWatchlist()) { watchlist.pop(); return; }
+          render();
+
+          const tabBtn = document.querySelector('[data-tab="watchlist"]');
+          if (tabBtn) tabBtn.click();
+          openForm(entry);
+        });
+      }
+
       render();
     })();
 

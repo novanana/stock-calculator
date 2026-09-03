@@ -823,6 +823,360 @@
     }
 
     .pop { animation: pop 0.2s ease; }
+
+    /* ── Trade journal (매매일지) ── */
+    .trade-toolbar {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .trade-toolbar .btn-ghost,
+    .trade-toolbar .btn-primary {
+      flex: 1;
+      padding: 13px;
+      font-size: 14px;
+    }
+
+    .trade-filter-bar {
+      display: flex;
+      gap: 8px;
+      background: var(--surface);
+      border-radius: 12px;
+      padding: 4px;
+      margin-bottom: 10px;
+    }
+
+    .trade-filter-btn {
+      flex: 1;
+      padding: 8px 4px;
+      border-radius: 8px;
+      border: none;
+      background: transparent;
+      color: var(--text3);
+      font-size: 13px;
+      font-weight: 500;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background 0.18s, color 0.18s;
+    }
+
+    .trade-filter-btn.active {
+      background: var(--surface2);
+      color: var(--text);
+    }
+
+    .trade-search {
+      width: 100%;
+      background: var(--surface);
+      border: none;
+      border-radius: 12px;
+      padding: 12px 14px;
+      color: var(--text);
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+      margin-bottom: 14px;
+      caret-color: var(--green);
+    }
+
+    .trade-search::placeholder { color: var(--text3); }
+
+    .trade-empty {
+      padding: 40px 16px;
+      text-align: center;
+      color: var(--text3);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .trade-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .trade-card {
+      background: var(--surface);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .trade-card-head {
+      padding: 14px 16px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .trade-card-title-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .trade-symbol {
+      font-size: 16px;
+      font-weight: 700;
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .trade-badge {
+      flex-shrink: 0;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 6px;
+    }
+
+    .trade-badge.holding { color: var(--blue);  background: var(--blue-dim); }
+    .trade-badge.partial { color: var(--orange); background: var(--orange-dim); }
+    .trade-badge.closed  { color: var(--text3); background: var(--surface2); }
+
+    .trade-card-stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px 10px;
+      font-size: 13px;
+      color: var(--text3);
+    }
+
+    .trade-pnl.pos { color: var(--green); }
+    .trade-pnl.neg { color: var(--red); }
+
+    .trade-chevron {
+      flex-shrink: 0;
+      color: var(--text3);
+      font-size: 12px;
+      transition: transform 0.18s;
+    }
+
+    .trade-card.expanded .trade-chevron { transform: rotate(180deg); }
+
+    .trade-card-body {
+      display: none;
+      border-top: 1px solid var(--border);
+      padding: 6px 16px 14px;
+    }
+
+    .trade-card.expanded .trade-card-body { display: block; }
+
+    .trade-lot {
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
+
+    .trade-lot:last-child { border-bottom: none; }
+
+    .trade-lot-type {
+      flex-shrink: 0;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 7px;
+      border-radius: 6px;
+      margin-top: 1px;
+    }
+
+    .trade-lot-type.buy  { color: var(--orange); background: var(--orange-dim); }
+    .trade-lot-type.sell { color: var(--purple); background: var(--purple-dim); }
+
+    .trade-lot-body { flex: 1; min-width: 0; }
+
+    .trade-lot-main {
+      font-size: 13px;
+      color: var(--text);
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .trade-lot-date { color: var(--text3); font-size: 12px; margin-top: 2px; }
+
+    .trade-lot-reason {
+      font-size: 12px;
+      color: var(--text3);
+      margin-top: 4px;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .trade-lot-actions {
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .trade-lot-actions button {
+      border: none;
+      background: var(--surface2);
+      color: var(--text3);
+      font-size: 11px;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-family: inherit;
+      cursor: pointer;
+    }
+
+    .trade-lot-actions button.trade-lot-del { color: var(--red); }
+
+    .trade-lot-photos {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .trade-lot-photo {
+      width: 56px;
+      height: 56px;
+      object-fit: cover;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    /* Trade form */
+    .trade-form-card {
+      background: var(--surface);
+      border-radius: 16px;
+      padding: 4px 16px 16px;
+      margin-bottom: 14px;
+    }
+
+    .trade-type-toggle {
+      display: flex;
+      background: var(--surface2);
+      border-radius: 10px;
+      padding: 4px;
+      margin: 12px 0 4px;
+    }
+
+    .trade-type-btn {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      border-radius: 7px;
+      background: transparent;
+      color: var(--text3);
+      font-size: 14px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+    }
+
+    .trade-type-btn.buy.active  { background: var(--orange-dim); color: var(--orange); }
+    .trade-type-btn.sell.active { background: var(--purple-dim); color: var(--purple); }
+
+    .trade-reason-input {
+      width: 100%;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text);
+      font-size: 14px;
+      font-family: inherit;
+      line-height: 1.5;
+      resize: vertical;
+      caret-color: var(--green);
+    }
+
+    .trade-reason-input::placeholder { color: var(--border); }
+
+    .trade-photo-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 10px;
+      padding: 9px 14px;
+      border-radius: 10px;
+      border: 1px dashed var(--border);
+      background: transparent;
+      color: var(--text3);
+      font-size: 13px;
+      font-weight: 500;
+      font-family: inherit;
+      cursor: pointer;
+    }
+
+    .trade-photo-btn:active { background: var(--surface2); }
+
+    .trade-photo-preview {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .trade-photo-thumb {
+      position: relative;
+      width: 64px;
+      height: 64px;
+    }
+
+    .trade-photo-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 8px;
+    }
+
+    .trade-photo-remove {
+      position: absolute;
+      top: -6px;
+      right: -6px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: none;
+      background: var(--red);
+      color: #fff;
+      font-size: 13px;
+      line-height: 1;
+      font-family: inherit;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .trade-form-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .input-item input[type="date"] {
+      font-size: 17px;
+      color-scheme: dark;
+    }
+
+    .trade-lightbox {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.92);
+      z-index: 2000;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .trade-lightbox.visible { display: flex; }
+
+    .trade-lightbox img {
+      max-width: 100%;
+      max-height: 100%;
+      border-radius: 10px;
+    }
   </style>
 </head>
 <body>
@@ -831,6 +1185,9 @@
   </header>
 
   <div class="tab-bar">
+    <div class="tab-row">
+      <button class="tab" data-tab="trades">매매일지</button>
+    </div>
     <div class="tab-row">
       <button class="tab active" data-tab="accum">매집비율</button>
       <button class="tab" data-tab="supply">수급맥점</button>
@@ -1415,6 +1772,84 @@
           <span class="res-label3">매출채권회수기일</span>
           <div class="res-value3-wrap"><span class="res-value3 empty" id="r_arDays_cur">—</span><span class="res-value3 empty" id="r_arDays_prev">—</span><span class="res-value3 empty" id="r_arDays_prev2">—</span></div>
         </div>
+      </div>
+
+    </section>
+
+    <!-- ───────── Tab 9: 매매일지 ───────── -->
+    <section id="tab-trades" class="tab-content">
+
+      <div class="trade-toolbar">
+        <button type="button" class="btn-primary" id="tr_addBtn">+ 매매 기록 추가</button>
+      </div>
+
+      <div class="card trade-form-card" id="tr_formCard" style="display:none;">
+        <div class="trade-type-toggle">
+          <button type="button" class="trade-type-btn buy active" id="tr_typeBuyBtn">매수</button>
+          <button type="button" class="trade-type-btn sell" id="tr_typeSellBtn">매도</button>
+        </div>
+        <div class="input-item">
+          <div class="input-label-row"><label for="tr_symbol">종목명</label></div>
+          <input type="text" id="tr_symbol" placeholder="예: 삼성전자" list="tr_symbolList"
+                 autocomplete="off" autocorrect="off" spellcheck="false">
+          <datalist id="tr_symbolList"></datalist>
+        </div>
+        <div class="input-item">
+          <div class="input-label-row"><label for="tr_date">날짜</label></div>
+          <input type="date" id="tr_date">
+        </div>
+        <div class="input-item">
+          <div class="input-label-row">
+            <label for="tr_qty">수량</label>
+            <span class="input-unit">주</span>
+          </div>
+          <input type="text" inputmode="decimal" id="tr_qty" placeholder="0"
+                 autocomplete="off" autocorrect="off" spellcheck="false">
+        </div>
+        <div class="input-item">
+          <div class="input-label-row">
+            <label for="tr_price">단가</label>
+            <span class="input-unit">원</span>
+          </div>
+          <input type="text" inputmode="decimal" id="tr_price" placeholder="0"
+                 autocomplete="off" autocorrect="off" spellcheck="false">
+        </div>
+        <div class="input-item">
+          <div class="input-label-row"><label for="tr_reason" id="tr_reasonLabel">매수 사유</label></div>
+          <textarea class="trade-reason-input" id="tr_reason" rows="3"
+                    placeholder="왜 샀는지 적어두면 나중에 복기할 때 도움이 돼요"></textarea>
+          <button type="button" class="trade-photo-btn" id="tr_photoBtn">📷 사진 첨부</button>
+          <input type="file" id="tr_photoInput" accept="image/*" multiple style="display:none;">
+          <div class="trade-photo-preview" id="tr_photoPreview"></div>
+        </div>
+        <div class="trade-form-actions">
+          <button type="button" class="btn-ghost" id="tr_cancelBtn">취소</button>
+          <button type="button" class="btn-primary" id="tr_saveBtn">저장</button>
+        </div>
+      </div>
+
+      <div class="trade-filter-bar">
+        <button type="button" class="trade-filter-btn active" data-filter="all">전체</button>
+        <button type="button" class="trade-filter-btn" data-filter="holding">보유중</button>
+        <button type="button" class="trade-filter-btn" data-filter="closed">매도완료</button>
+      </div>
+
+      <input type="text" class="trade-search" id="tr_search" placeholder="종목명 검색"
+             autocomplete="off" autocorrect="off" spellcheck="false">
+
+      <div class="trade-list" id="tr_list"></div>
+      <div class="trade-empty" id="tr_empty" style="display:none;">
+        아직 기록된 매매가 없어요.<br>위 버튼으로 첫 매매를 기록해보세요.
+      </div>
+
+      <div class="trade-toolbar" style="margin-top:18px;">
+        <button type="button" class="btn-ghost" id="tr_exportBtn">내보내기(백업)</button>
+        <button type="button" class="btn-ghost" id="tr_importBtn">가져오기</button>
+        <input type="file" id="tr_importInput" accept="application/json" style="display:none;">
+      </div>
+
+      <div class="trade-lightbox" id="tr_lightbox">
+        <img id="tr_lightboxImg" src="" alt="">
       </div>
 
     </section>
@@ -2587,6 +3022,386 @@
         lastTapCell = null;
       }, DOUBLE_TAP_MS);
     }, { passive: false });
+
+    /* ── 매매일지 (Trade Journal) ── */
+    (function () {
+      const TRADES_KEY = 'sc_trades';
+      const PHOTO_MAX_DIM = 1280;
+      const PHOTO_QUALITY = 0.75;
+
+      function loadTrades() {
+        try {
+          const arr = JSON.parse(localStorage.getItem(TRADES_KEY) || '[]');
+          return Array.isArray(arr) ? arr : [];
+        } catch (e) { return []; }
+      }
+
+      function saveTrades() {
+        try {
+          localStorage.setItem(TRADES_KEY, JSON.stringify(trades));
+          return true;
+        } catch (e) {
+          alert('저장 공간이 부족합니다. 사진 크기를 줄이거나 오래된 사진을 정리한 뒤 다시 시도해주세요.');
+          return false;
+        }
+      }
+
+      function makeId() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
+
+      function todayStr() {
+        const d = new Date();
+        return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+      }
+
+      function escapeHtml(s) {
+        return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+      }
+
+      // 원본 사진을 캔버스로 리사이즈/재압축해 localStorage 용량 부담을 줄인다
+      function resizeImage(file, maxDim, quality) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => {
+            const img = new Image();
+            img.onload = () => {
+              let { width, height } = img;
+              if (width > maxDim || height > maxDim) {
+                if (width > height) { height = Math.round(height * maxDim / width); width = maxDim; }
+                else { width = Math.round(width * maxDim / height); height = maxDim; }
+              }
+              const canvas = document.createElement('canvas');
+              canvas.width = width;
+              canvas.height = height;
+              canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+              resolve(canvas.toDataURL('image/jpeg', quality));
+            };
+            img.onerror = () => reject(new Error('image load failed'));
+            img.src = reader.result;
+          };
+          reader.onerror = () => reject(new Error('file read failed'));
+          reader.readAsDataURL(file);
+        });
+      }
+
+      let trades = loadTrades();
+      let filter = 'all';
+      let searchText = '';
+      let editingId = null;
+      let formType = 'buy';
+      let formPhotos = [];
+      const expandedSymbols = new Set();
+
+      const formCard     = document.getElementById('tr_formCard');
+      const addBtn       = document.getElementById('tr_addBtn');
+      const cancelBtn    = document.getElementById('tr_cancelBtn');
+      const saveBtn      = document.getElementById('tr_saveBtn');
+      const typeBuyBtn   = document.getElementById('tr_typeBuyBtn');
+      const typeSellBtn  = document.getElementById('tr_typeSellBtn');
+      const reasonLabel  = document.getElementById('tr_reasonLabel');
+      const symbolInput  = document.getElementById('tr_symbol');
+      const dateInput    = document.getElementById('tr_date');
+      const qtyInput     = document.getElementById('tr_qty');
+      const priceInput   = document.getElementById('tr_price');
+      const reasonInput  = document.getElementById('tr_reason');
+      const photoBtn     = document.getElementById('tr_photoBtn');
+      const photoInput   = document.getElementById('tr_photoInput');
+      const photoPreview = document.getElementById('tr_photoPreview');
+      const listEl       = document.getElementById('tr_list');
+      const emptyEl      = document.getElementById('tr_empty');
+      const searchEl     = document.getElementById('tr_search');
+      const symbolList   = document.getElementById('tr_symbolList');
+      const lightbox      = document.getElementById('tr_lightbox');
+      const lightboxImg   = document.getElementById('tr_lightboxImg');
+
+      function setFormType(type) {
+        formType = type;
+        typeBuyBtn.classList.toggle('active', type === 'buy');
+        typeSellBtn.classList.toggle('active', type === 'sell');
+        reasonLabel.textContent = type === 'buy' ? '매수 사유' : '매도 사유';
+      }
+
+      function updateSymbolDatalist() {
+        const names = [...new Set(trades.map(t => t.symbol))];
+        symbolList.innerHTML = names.map(n => `<option value="${escapeHtml(n)}">`).join('');
+      }
+
+      function renderFormPhotos() {
+        photoPreview.innerHTML = formPhotos.map((src, i) => `
+          <div class="trade-photo-thumb">
+            <img src="${src}">
+            <button type="button" class="trade-photo-remove" data-i="${i}">×</button>
+          </div>
+        `).join('');
+        photoPreview.querySelectorAll('.trade-photo-remove').forEach(btn => {
+          btn.addEventListener('click', () => {
+            formPhotos.splice(Number(btn.dataset.i), 1);
+            renderFormPhotos();
+          });
+        });
+      }
+
+      function openForm(trade) {
+        editingId = trade ? trade.id : null;
+        setFormType(trade ? trade.type : 'buy');
+        symbolInput.value = trade ? trade.symbol : '';
+        dateInput.value   = trade ? trade.date : todayStr();
+        qtyInput.value    = trade ? toComma(trade.qty) : '';
+        priceInput.value  = trade ? toComma(trade.price) : '';
+        reasonInput.value = trade ? trade.reason : '';
+        formPhotos = trade && trade.photos ? [...trade.photos] : [];
+        renderFormPhotos();
+        updateSymbolDatalist();
+        formCard.style.display = '';
+        formCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        symbolInput.focus();
+      }
+
+      function closeForm() {
+        formCard.style.display = 'none';
+        editingId = null;
+      }
+
+      addBtn.addEventListener('click', () => openForm(null));
+      cancelBtn.addEventListener('click', closeForm);
+      typeBuyBtn.addEventListener('click', () => setFormType('buy'));
+      typeSellBtn.addEventListener('click', () => setFormType('sell'));
+      [qtyInput, priceInput].forEach(el => el.addEventListener('input', () => applyFormat(el)));
+
+      photoBtn.addEventListener('click', () => photoInput.click());
+      photoInput.addEventListener('change', async function () {
+        const files = [...this.files];
+        this.value = '';
+        for (const file of files) {
+          try { formPhotos.push(await resizeImage(file, PHOTO_MAX_DIM, PHOTO_QUALITY)); }
+          catch (e) {}
+        }
+        renderFormPhotos();
+      });
+
+      lightbox.addEventListener('click', () => lightbox.classList.remove('visible'));
+
+      saveBtn.addEventListener('click', () => {
+        const symbol = symbolInput.value.trim();
+        const date   = dateInput.value;
+        const qty    = parseNum(qtyInput.value || '0');
+        const price  = parseNum(priceInput.value || '0');
+        const reason = reasonInput.value.trim();
+        const photos = formPhotos.slice();
+
+        if (!symbol) { symbolInput.focus(); return; }
+        if (!date)   { dateInput.focus(); return; }
+        if (!qty)    { qtyInput.focus(); return; }
+        if (!price)  { priceInput.focus(); return; }
+
+        if (editingId) {
+          const t = trades.find(t => t.id === editingId);
+          if (!t) return;
+          const backup = { ...t };
+          Object.assign(t, { symbol, type: formType, date, qty, price, reason, photos });
+          if (!saveTrades()) { Object.assign(t, backup); return; }
+        } else {
+          const record = { id: makeId(), symbol, type: formType, date, qty, price, reason, photos, createdAt: Date.now() };
+          trades.push(record);
+          if (!saveTrades()) { trades.pop(); return; }
+        }
+        closeForm();
+        render();
+      });
+
+      document.querySelectorAll('.trade-filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          filter = btn.dataset.filter;
+          document.querySelectorAll('.trade-filter-btn').forEach(b => b.classList.toggle('active', b === btn));
+          render();
+        });
+      });
+
+      searchEl.addEventListener('input', () => {
+        searchText = searchEl.value.trim().toLowerCase();
+        render();
+      });
+
+      // 평균단가법: 매수마다 평단가를 갱신하고, 매도 시 그 시점 평단가와의 차액을 실현손익으로 누적
+      function computePosition(symbolTrades) {
+        const sorted = [...symbolTrades].sort((a, b) =>
+          a.date === b.date ? a.createdAt - b.createdAt : a.date.localeCompare(b.date));
+        let qty = 0, avgCost = 0, realizedPnl = 0, sellCount = 0;
+        sorted.forEach(t => {
+          if (t.type === 'buy') {
+            avgCost = qty + t.qty > 0 ? (avgCost * qty + t.price * t.qty) / (qty + t.qty) : t.price;
+            qty += t.qty;
+          } else {
+            realizedPnl += (t.price - avgCost) * Math.min(t.qty, Math.max(qty, 0));
+            qty -= t.qty;
+            sellCount++;
+          }
+        });
+        return {
+          qty, avgCost, realizedPnl, sellCount,
+          status: qty > 0 ? (sellCount > 0 ? 'partial' : 'holding') : 'closed',
+          lastDate: sorted.length ? sorted[sorted.length - 1].date : ''
+        };
+      }
+
+      function groupBySymbol() {
+        const map = new Map();
+        trades.forEach(t => {
+          if (!map.has(t.symbol)) map.set(t.symbol, []);
+          map.get(t.symbol).push(t);
+        });
+        return map;
+      }
+
+      function renderCard(symbol, symbolTrades) {
+        const pos = computePosition(symbolTrades);
+        const expanded = expandedSymbols.has(symbol);
+        const badgeText = { holding: '보유중', partial: '부분매도', closed: '매도완료' }[pos.status];
+
+        const sorted = [...symbolTrades].sort((a, b) =>
+          b.date === a.date ? b.createdAt - a.createdAt : b.date.localeCompare(a.date));
+
+        let statsHtml = '';
+        if (pos.qty > 0) statsHtml += `<span>보유 ${toComma(pos.qty)}주 · 평단 ${toComma(pos.avgCost)}원</span>`;
+        if (pos.sellCount > 0) {
+          const cls = pos.realizedPnl >= 0 ? 'pos' : 'neg';
+          statsHtml += `<span class="trade-pnl ${cls}">실현 ${pos.realizedPnl >= 0 ? '+' : ''}${toComma(pos.realizedPnl)}원</span>`;
+        }
+
+        const lotsHtml = sorted.map(t => `
+          <div class="trade-lot">
+            <span class="trade-lot-type ${t.type}">${t.type === 'buy' ? '매수' : '매도'}</span>
+            <div class="trade-lot-body">
+              <div class="trade-lot-main">
+                <span>${toComma(t.qty)}주 · ${toComma(t.price)}원</span>
+                <span>${toComma(t.qty * t.price)}원</span>
+              </div>
+              <div class="trade-lot-date">${t.date}</div>
+              ${t.reason ? `<div class="trade-lot-reason">${escapeHtml(t.reason)}</div>` : ''}
+              ${t.photos && t.photos.length ? `<div class="trade-lot-photos">${t.photos.map(src => `<img class="trade-lot-photo" src="${src}">`).join('')}</div>` : ''}
+            </div>
+            <div class="trade-lot-actions">
+              <button type="button" class="trade-lot-edit" data-id="${t.id}">수정</button>
+              <button type="button" class="trade-lot-del" data-id="${t.id}">삭제</button>
+            </div>
+          </div>
+        `).join('');
+
+        return `
+          <div class="trade-card${expanded ? ' expanded' : ''}" data-symbol="${escapeHtml(symbol)}">
+            <div class="trade-card-head">
+              <div class="trade-card-title-row">
+                <span class="trade-symbol">${escapeHtml(symbol)}</span>
+                <span class="trade-badge ${pos.status}">${badgeText}</span>
+                <span class="trade-chevron">▾</span>
+              </div>
+              <div class="trade-card-stats">${statsHtml}</div>
+            </div>
+            <div class="trade-card-body">${lotsHtml}</div>
+          </div>
+        `;
+      }
+
+      function render() {
+        const groups = groupBySymbol();
+        let symbols = [...groups.keys()].filter(s => {
+          const pos = computePosition(groups.get(s));
+          if (filter === 'holding' && pos.status === 'closed') return false;
+          if (filter === 'closed' && pos.status !== 'closed') return false;
+          if (searchText && !s.toLowerCase().includes(searchText)) return false;
+          return true;
+        });
+
+        symbols.sort((a, b) => computePosition(groups.get(b)).lastDate.localeCompare(computePosition(groups.get(a)).lastDate));
+
+        emptyEl.style.display = symbols.length ? 'none' : '';
+        listEl.innerHTML = symbols.map(symbol => renderCard(symbol, groups.get(symbol))).join('');
+
+        listEl.querySelectorAll('.trade-card-head').forEach(head => {
+          head.addEventListener('click', () => {
+            const card = head.closest('.trade-card');
+            const symbol = card.dataset.symbol;
+            if (expandedSymbols.has(symbol)) expandedSymbols.delete(symbol);
+            else expandedSymbols.add(symbol);
+            card.classList.toggle('expanded');
+          });
+        });
+
+        listEl.querySelectorAll('.trade-lot-photo').forEach(img => {
+          img.addEventListener('click', (e) => {
+            e.stopPropagation();
+            lightboxImg.src = img.src;
+            lightbox.classList.add('visible');
+          });
+        });
+
+        listEl.querySelectorAll('.trade-lot-edit').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const t = trades.find(t => t.id === btn.dataset.id);
+            if (t) openForm(t);
+          });
+        });
+
+        listEl.querySelectorAll('.trade-lot-del').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (!confirm('이 매매 기록을 삭제할까요?')) return;
+            trades = trades.filter(t => t.id !== btn.dataset.id);
+            saveTrades();
+            render();
+          });
+        });
+      }
+
+      /* ── Export / Import (backup) ── */
+      document.getElementById('tr_exportBtn').addEventListener('click', () => {
+        const blob = new Blob([JSON.stringify(trades, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'stock-trades-' + todayStr() + '.json';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+      });
+
+      const importInput = document.getElementById('tr_importInput');
+      document.getElementById('tr_importBtn').addEventListener('click', () => importInput.click());
+      importInput.addEventListener('change', function () {
+        const file = this.files && this.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+          try {
+            const imported = JSON.parse(reader.result);
+            if (!Array.isArray(imported)) throw new Error('invalid');
+            const existingIds = new Set(trades.map(t => t.id));
+            const addedTrades = [];
+            imported.forEach(t => {
+              if (t && t.id && t.symbol && t.type && t.date && !existingIds.has(t.id)) {
+                trades.push(t);
+                existingIds.add(t.id);
+                addedTrades.push(t);
+              }
+            });
+            if (saveTrades()) {
+              render();
+              alert(`${addedTrades.length}건을 가져왔습니다.`);
+            } else {
+              trades = trades.filter(t => !addedTrades.includes(t));
+            }
+          } catch (e) {
+            alert('파일을 읽을 수 없습니다. 올바른 백업 파일인지 확인해주세요.');
+          }
+          importInput.value = '';
+        };
+        reader.readAsText(file);
+      });
+
+      dateInput.value = todayStr();
+      render();
+    })();
 
     /* ── PWA ── */
     if ('serviceWorker' in navigator) {

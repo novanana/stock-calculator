@@ -1202,6 +1202,47 @@
       border-radius: 10px;
     }
 
+    /* ── Watchlist duplicate-symbol modal ── */
+    .watch-dup-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 2100;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .watch-dup-modal.visible { display: flex; }
+
+    .watch-dup-modal-card {
+      background: var(--surface);
+      border-radius: 16px;
+      padding: 20px;
+      width: 100%;
+      max-width: 340px;
+    }
+
+    .watch-dup-modal-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .watch-dup-modal-desc {
+      font-size: 13px;
+      color: var(--text3);
+      line-height: 1.5;
+      margin-bottom: 16px;
+    }
+
+    .watch-dup-modal-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
     /* ── Watchlist (관심종목) ── */
     .watch-list {
       display: flex;
@@ -2079,7 +2120,7 @@
       <div class="card watch-form-card" id="wl_formCard" style="display:none;">
         <div class="input-item">
           <div class="input-label-row"><label for="wl_symbol">종목명</label></div>
-          <input type="text" id="wl_symbol" autocomplete="off" autocorrect="off" spellcheck="false">
+          <input type="text" id="wl_symbol" autocomplete="off" autocorrect="off" spellcheck="false" readonly>
         </div>
         <div class="input-item">
           <div class="input-label-row"><label for="wl_alignDate">정배열 완성일</label></div>
@@ -2116,6 +2157,18 @@
     </section>
 
   </main>
+
+  <div class="watch-dup-modal" id="wl_dupModal">
+    <div class="watch-dup-modal-card">
+      <div class="watch-dup-modal-title">이미 등록된 종목이에요</div>
+      <div class="watch-dup-modal-desc"><span id="wl_dupSymbol"></span> 종목이 관심종목에 이미 있습니다. 어떻게 할까요?</div>
+      <div class="watch-dup-modal-actions">
+        <button type="button" class="btn-primary" id="wl_dupOverwriteBtn">기존 데이터에 덮어쓰기</button>
+        <button type="button" class="btn-ghost" id="wl_dupNewBtn">새로 저장</button>
+        <button type="button" class="btn-ghost" id="wl_dupCancelBtn">취소</button>
+      </div>
+    </div>
+  </div>
 
   <script>
     /* ── Utilities ── */
@@ -3946,6 +3999,8 @@
       const formCard    = document.getElementById('wl_formCard');
       const addBtn2     = document.getElementById('wl_addBtn');
       const symbolInput = document.getElementById('wl_symbol');
+      // readonly until focused: 브라우저가 이전에 입력했던 종목명들을 자동완성 드롭다운으로 띄우는 것을 막는다
+      symbolInput.addEventListener('focus', () => symbolInput.removeAttribute('readonly'));
       const dateInput2  = document.getElementById('wl_alignDate');
       const opinionInput = document.getElementById('wl_opinion');
       const cancelBtn   = document.getElementById('wl_cancelBtn');
@@ -3956,6 +4011,7 @@
 
       function openForm(entry) {
         editingId = entry ? entry.id : null;
+        symbolInput.setAttribute('readonly', '');
         symbolInput.value = entry ? entry.symbol : '';
         dateInput2.value  = entry ? (entry.alignDate || '') : '';
         opinionInput.value = entry ? (entry.opinion || '') : '';
@@ -4073,6 +4129,11 @@
 
       function signClass(raw) { return raw === null ? '' : (raw >= 0 ? 'pos' : 'neg'); }
 
+      function formatDate(ts) {
+        const d = new Date(ts);
+        return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+      }
+
       function renderCard(entry) {
         const expanded = expandedIds.has(entry.id);
         const weeks = weeksElapsed(entry.alignDate);
@@ -4084,7 +4145,7 @@
                 <span class="watch-symbol">${escapeHtml(entry.symbol)}</span>
                 ${weeks !== null ? `<span class="watch-weeks-badge">${weeks}주 경과</span>` : ''}
               </div>
-              <div class="watch-card-sub">${entry.alignDate ? '정배열 완성일 ' + entry.alignDate : '정배열 완성일 미입력'}</div>
+              <div class="watch-card-sub">${entry.alignDate ? '정배열 완성일 ' + entry.alignDate : '정배열 완성일 미입력'} · 작성일 ${formatDate(entry.addedAt)}</div>
             </div>
             <div class="watch-stats-row">
               <div class="watch-stat">
@@ -4167,6 +4228,67 @@
         return snap;
       }
 
+      // 같은 종목명이 이미 관심종목에 있을 때 '덮어쓰기 / 새로 저장 / 취소'를 고르게 하는 모달
+      const dupModal          = document.getElementById('wl_dupModal');
+      const dupSymbolEl       = document.getElementById('wl_dupSymbol');
+      const dupOverwriteBtn   = document.getElementById('wl_dupOverwriteBtn');
+      const dupNewBtn         = document.getElementById('wl_dupNewBtn');
+      const dupCancelBtn      = document.getElementById('wl_dupCancelBtn');
+      let pendingEntry = null;
+      let pendingExisting = null;
+
+      function closeDupModal() {
+        dupModal.classList.remove('visible');
+        pendingEntry = null;
+        pendingExisting = null;
+      }
+
+      function goToWatchlistAndOpen(entry) {
+        render();
+        const tabBtn = document.querySelector('[data-tab="watchlist"]');
+        if (tabBtn) tabBtn.click();
+        openForm(entry);
+      }
+
+      function finishAddNew(entry) {
+        watchlist.push(entry);
+        if (!saveWatchlist()) { watchlist.pop(); return; }
+        goToWatchlistAndOpen(entry);
+      }
+
+      function finishOverwrite(existing, entry) {
+        const backup = { ...existing };
+        Object.assign(existing, {
+          growthPrevText: entry.growthPrevText,
+          growthCurText:  entry.growthCurText,
+          deltaText:      entry.deltaText,
+          growthPrevRaw:  entry.growthPrevRaw,
+          growthCurRaw:   entry.growthCurRaw,
+          deltaRaw:       entry.deltaRaw,
+          snapshot:       entry.snapshot,
+          compareSnapshot: entry.compareSnapshot,
+          addedAt: Date.now(),
+        });
+        if (!saveWatchlist()) { Object.assign(existing, backup); return; }
+        goToWatchlistAndOpen(existing);
+      }
+
+      dupCancelBtn.addEventListener('click', closeDupModal);
+
+      dupNewBtn.addEventListener('click', () => {
+        if (!pendingEntry) return;
+        const entry = pendingEntry;
+        closeDupModal();
+        finishAddNew(entry);
+      });
+
+      dupOverwriteBtn.addEventListener('click', () => {
+        if (!pendingEntry || !pendingExisting) return;
+        const entry = pendingEntry, existing = pendingExisting;
+        closeDupModal();
+        finishOverwrite(existing, entry);
+      });
+
       // 가치평가 탭의 '★ 관심종목에 추가' 버튼: 선택된 기업(및 비교 중인 다른 기업 전체)의 계산 결과를 스냅샷으로 저장한다
       const addBtn = document.getElementById('i_addToWatchlistBtn');
       if (addBtn) {
@@ -4220,13 +4342,15 @@
             addedAt: Date.now(),
           };
 
-          watchlist.push(entry);
-          if (!saveWatchlist()) { watchlist.pop(); return; }
-          render();
-
-          const tabBtn = document.querySelector('[data-tab="watchlist"]');
-          if (tabBtn) tabBtn.click();
-          openForm(entry);
+          const existing = watchlist.find(w => w.symbol === entry.symbol);
+          if (existing) {
+            pendingEntry = entry;
+            pendingExisting = existing;
+            dupSymbolEl.textContent = entry.symbol;
+            dupModal.classList.add('visible');
+            return;
+          }
+          finishAddNew(entry);
         });
       }
 

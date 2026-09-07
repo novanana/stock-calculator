@@ -2002,9 +2002,8 @@
         </div>
         <div class="input-item">
           <div class="input-label-row"><label for="tr_symbol">종목명</label></div>
-          <input type="text" id="tr_symbol" placeholder="예: 삼성전자" list="tr_symbolList"
+          <input type="text" id="tr_symbol" placeholder="예: 삼성전자"
                  autocomplete="off" autocorrect="off" spellcheck="false">
-          <datalist id="tr_symbolList"></datalist>
         </div>
         <div class="input-item">
           <div class="input-label-row"><label for="tr_date">날짜</label></div>
@@ -3556,7 +3555,6 @@
       const listEl       = document.getElementById('tr_list');
       const emptyEl      = document.getElementById('tr_empty');
       const searchEl     = document.getElementById('tr_search');
-      const symbolList   = document.getElementById('tr_symbolList');
       const lightbox      = document.getElementById('tr_lightbox');
       const lightboxImg   = document.getElementById('tr_lightboxImg');
 
@@ -3565,11 +3563,6 @@
         typeBuyBtn.classList.toggle('active', type === 'buy');
         typeSellBtn.classList.toggle('active', type === 'sell');
         reasonLabel.textContent = type === 'buy' ? '매수 사유' : '매도 사유';
-      }
-
-      function updateSymbolDatalist() {
-        const names = [...new Set(trades.map(t => t.symbol))];
-        symbolList.innerHTML = names.map(n => `<option value="${escapeHtml(n)}">`).join('');
       }
 
       function renderFormPhotos() {
@@ -3597,7 +3590,6 @@
         reasonInput.value = trade ? trade.reason : '';
         formPhotos = trade && trade.photos ? [...trade.photos] : [];
         renderFormPhotos();
-        updateSymbolDatalist();
         formCard.style.display = '';
         formCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         if (prefill && prefill.qty) qtyInput.focus(); else symbolInput.focus();

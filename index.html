@@ -951,6 +951,10 @@
     .trade-pnl.pos { color: var(--green); }
     .trade-pnl.neg { color: var(--red); }
 
+    .trade-date-tag { font-weight: 600; }
+    .trade-date-tag.buy  { color: var(--red); }
+    .trade-date-tag.sell { color: var(--blue); }
+
     .trade-chevron {
       flex-shrink: 0;
       color: var(--text3);
@@ -3670,19 +3674,21 @@
       function computePosition(symbolTrades) {
         const sorted = [...symbolTrades].sort((a, b) =>
           a.date === b.date ? a.createdAt - b.createdAt : a.date.localeCompare(b.date));
-        let qty = 0, avgCost = 0, realizedPnl = 0, sellCount = 0;
+        let qty = 0, avgCost = 0, realizedPnl = 0, sellCount = 0, lastBuyDate = '', lastSellDate = '';
         sorted.forEach(t => {
           if (t.type === 'buy') {
             avgCost = qty + t.qty > 0 ? (avgCost * qty + t.price * t.qty) / (qty + t.qty) : t.price;
             qty += t.qty;
+            lastBuyDate = t.date;
           } else {
             realizedPnl += (t.price - avgCost) * Math.min(t.qty, Math.max(qty, 0));
             qty -= t.qty;
             sellCount++;
+            lastSellDate = t.date;
           }
         });
         return {
-          qty, avgCost, realizedPnl, sellCount,
+          qty, avgCost, realizedPnl, sellCount, lastBuyDate, lastSellDate,
           status: qty > 0 ? (sellCount > 0 ? 'partial' : 'holding') : 'closed',
           lastDate: sorted.length ? sorted[sorted.length - 1].date : ''
         };
@@ -3706,6 +3712,11 @@
           b.date === a.date ? b.createdAt - a.createdAt : b.date.localeCompare(a.date));
 
         let statsHtml = '';
+        if (pos.qty > 0 && pos.lastBuyDate) {
+          statsHtml += `<span class="trade-date-tag buy">매수 ${pos.lastBuyDate}</span>`;
+        } else if (pos.qty <= 0 && pos.lastSellDate) {
+          statsHtml += `<span class="trade-date-tag sell">매도 ${pos.lastSellDate}</span>`;
+        }
         if (pos.qty > 0) statsHtml += `<span>보유 ${toComma(pos.qty)}주 · 평단 ${toComma(pos.avgCost)}원</span>`;
         if (pos.sellCount > 0) {
           const cls = pos.realizedPnl >= 0 ? 'pos' : 'neg';

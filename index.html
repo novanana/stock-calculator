@@ -2072,6 +2072,10 @@
     <!-- ───────── Tab 10: 관심종목 ───────── -->
     <section id="tab-watchlist" class="tab-content">
 
+      <div class="trade-toolbar">
+        <button type="button" class="btn-primary" id="wl_addBtn">+ 관심종목 추가</button>
+      </div>
+
       <div class="card watch-form-card" id="wl_formCard" style="display:none;">
         <div class="input-item">
           <div class="input-label-row"><label for="wl_symbol">종목명</label></div>
@@ -2097,7 +2101,7 @@
 
       <div class="watch-list" id="wl_list"></div>
       <div class="trade-empty" id="wl_empty" style="display:none;">
-        아직 담은 관심종목이 없어요.<br>'가치평가' 탭에서 종목을 선택하고 ‘★ 관심종목에 추가’ 버튼을 눌러보세요.
+        아직 담은 관심종목이 없어요.<br>위 버튼으로 직접 추가하거나, '가치평가' 탭에서 종목을 선택하고 ‘★ 관심종목에 추가’ 버튼을 눌러보세요.
       </div>
 
     </section>
@@ -3940,6 +3944,7 @@
       const selectedCompanyIdx = new Map(); // entry.id -> 종합비교표에서 선택된 기업의 index (기본값: 추가 당시 활성 기업)
 
       const formCard    = document.getElementById('wl_formCard');
+      const addBtn2     = document.getElementById('wl_addBtn');
       const symbolInput = document.getElementById('wl_symbol');
       const dateInput2  = document.getElementById('wl_alignDate');
       const opinionInput = document.getElementById('wl_opinion');
@@ -3950,13 +3955,13 @@
       const searchEl    = document.getElementById('wl_search');
 
       function openForm(entry) {
-        editingId = entry.id;
-        symbolInput.value = entry.symbol;
-        dateInput2.value  = entry.alignDate || '';
-        opinionInput.value = entry.opinion || '';
+        editingId = entry ? entry.id : null;
+        symbolInput.value = entry ? entry.symbol : '';
+        dateInput2.value  = entry ? (entry.alignDate || '') : '';
+        opinionInput.value = entry ? (entry.opinion || '') : '';
         formCard.style.display = '';
         formCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        opinionInput.focus();
+        if (entry) opinionInput.focus(); else symbolInput.focus();
       }
 
       function closeForm() {
@@ -3964,16 +3969,35 @@
         editingId = null;
       }
 
+      addBtn2.addEventListener('click', () => openForm(null));
       cancelBtn.addEventListener('click', closeForm);
 
       saveBtn.addEventListener('click', () => {
-        const entry = watchlist.find(w => w.id === editingId);
-        if (!entry) { closeForm(); return; }
-        const backup = { ...entry };
-        entry.symbol = symbolInput.value.trim() || entry.symbol;
-        entry.alignDate = dateInput2.value;
-        entry.opinion = opinionInput.value.trim();
-        if (!saveWatchlist()) { Object.assign(entry, backup); return; }
+        if (editingId) {
+          const entry = watchlist.find(w => w.id === editingId);
+          if (!entry) { closeForm(); return; }
+          const backup = { ...entry };
+          entry.symbol = symbolInput.value.trim() || entry.symbol;
+          entry.alignDate = dateInput2.value;
+          entry.opinion = opinionInput.value.trim();
+          if (!saveWatchlist()) { Object.assign(entry, backup); return; }
+        } else {
+          const symbol = symbolInput.value.trim();
+          if (!symbol) { symbolInput.focus(); return; }
+          const entry = {
+            id: makeId(),
+            symbol,
+            alignDate: dateInput2.value,
+            opinion: opinionInput.value.trim(),
+            growthPrevText: '—', growthCurText: '—', deltaText: '—',
+            growthPrevRaw: null, growthCurRaw: null, deltaRaw: null,
+            snapshot: null,
+            compareSnapshot: null,
+            addedAt: Date.now(),
+          };
+          watchlist.push(entry);
+          if (!saveWatchlist()) { watchlist.pop(); return; }
+        }
         closeForm();
         render();
       });
@@ -4078,7 +4102,7 @@
             </div>
             <div class="watch-opinion${entry.opinion ? '' : ' empty'}">${entry.opinion ? escapeHtml(entry.opinion) : '나의 의견이 아직 없어요'}</div>
             <div class="watch-actions">
-              <button type="button" class="watch-snapshot-btn" data-id="${entry.id}">가치평가 ${expanded ? '접기' : '보기'}</button>
+              ${(entry.snapshot || entry.compareSnapshot) ? `<button type="button" class="watch-snapshot-btn" data-id="${entry.id}">가치평가 ${expanded ? '접기' : '보기'}</button>` : ''}
               <button type="button" class="watch-edit-btn" data-id="${entry.id}">수정</button>
               <button type="button" class="watch-del-btn" data-id="${entry.id}">삭제</button>
             </div>

@@ -1263,6 +1263,11 @@
       gap: 4px;
     }
 
+    .watch-card-date {
+      font-size: 11px;
+      color: var(--text3);
+    }
+
     .watch-card-title-row {
       display: flex;
       align-items: center;
@@ -4141,11 +4146,12 @@
         return `
           <div class="watch-card" data-id="${entry.id}">
             <div class="watch-card-head">
+              <div class="watch-card-date">${formatDate(entry.addedAt)}</div>
               <div class="watch-card-title-row">
                 <span class="watch-symbol">${escapeHtml(entry.symbol)}</span>
                 ${weeks !== null ? `<span class="watch-weeks-badge">${weeks}주 경과</span>` : ''}
               </div>
-              <div class="watch-card-sub">${entry.alignDate ? '정배열 완성일 ' + entry.alignDate : '정배열 완성일 미입력'} · 작성일 ${formatDate(entry.addedAt)}</div>
+              <div class="watch-card-sub">${entry.alignDate ? '정배열 완성일 ' + entry.alignDate : '정배열 완성일 미입력'}</div>
             </div>
             <div class="watch-stats-row">
               <div class="watch-stat">

@@ -960,6 +960,24 @@
 
     .trade-card.expanded .trade-chevron { transform: rotate(180deg); }
 
+    .trade-add-lot-btn {
+      flex-shrink: 0;
+      width: 24px;
+      height: 24px;
+      border: none;
+      border-radius: 50%;
+      background: var(--blue-dim);
+      color: var(--blue);
+      font-size: 16px;
+      font-weight: 700;
+      line-height: 1;
+      font-family: inherit;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
     .trade-card-body {
       display: none;
       border-top: 1px solid var(--border);
@@ -1312,6 +1330,51 @@
       padding: 4px 16px 16px;
       margin-bottom: 14px;
     }
+
+    /* ── Monthly picks (월별유망주) ── */
+    .month-pill-row {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      margin: 14px 0 10px;
+      padding: 2px 2px 6px;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+
+    .month-pill-row::-webkit-scrollbar { display: none; }
+
+    .month-pill {
+      flex: 0 0 auto;
+      padding: 8px 14px;
+      border-radius: 20px;
+      border: none;
+      background: var(--surface);
+      color: var(--text3);
+      font-size: 14px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .month-pill.active {
+      background: var(--blue);
+      color: #fff;
+    }
+
+    .month-pick-badge {
+      flex-shrink: 0;
+      font-size: 13px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+      color: var(--green);
+      background: var(--green-dim);
+    }
+
+    .mo-buy  { color: var(--red); font-weight: 600; }
+    .mo-sell { color: var(--blue); font-weight: 600; }
   </style>
 </head>
 <body>
@@ -1323,6 +1386,7 @@
     <div class="tab-row">
       <button class="tab" data-tab="trades">매매일지</button>
       <button class="tab" data-tab="watchlist">관심종목</button>
+      <button class="tab" data-tab="monthly">월별유망주</button>
     </div>
     <div class="tab-row">
       <button class="tab active" data-tab="accum">매집비율</button>
@@ -2032,6 +2096,15 @@
       <div class="trade-empty" id="wl_empty" style="display:none;">
         아직 담은 관심종목이 없어요.<br>'가치평가' 탭에서 종목을 선택하고 ‘★ 관심종목에 추가’ 버튼을 눌러보세요.
       </div>
+
+    </section>
+
+    <!-- ───────── Tab 11: 월별유망주 ───────── -->
+    <section id="tab-monthly" class="tab-content">
+
+      <div class="month-pill-row" id="mo_pillRow"></div>
+
+      <div class="watch-list" id="mo_list"></div>
 
     </section>
 
@@ -3036,6 +3109,143 @@
       document.getElementById('f_curAssets_cur').focus();
     });
 
+    /* ── Tab 11: 월별유망주 ── */
+
+    const MONTHLY_PICKS = {
+      1: [
+        { ticker: 'NFLX', name: '넷플릭스', winRate: 90, ret: 12.7, buy: '1월 12일', sell: '2월 1일', days: 20 },
+        { ticker: 'NVDA', name: '엔비디아', winRate: 95, ret: 7.3, buy: '1월 22일', sell: '2월 21일', days: 20 },
+        { ticker: 'JPM', name: 'JP모건', winRate: 100, ret: 4.0, buy: '1월 22일', sell: '2월 16일', days: 20 },
+        { ticker: '텐센트', name: '텐센트', winRate: 100, ret: 4.1, buy: '1월 16일', sell: '2월 15일', days: 10 },
+        { ticker: 'BTC', name: '비트코인', winRate: 90, ret: 14.0, buy: '1월 30일', sell: '2월 19일', days: 10 },
+      ],
+      2: [
+        { ticker: '상해 A주', name: '상하이 A주', winRate: 90, ret: 5.6, buy: '2월 1일', sell: '2월 21일', days: 20 },
+        { ticker: 'BKNG', name: '부킹 홀딩스', winRate: 90, ret: 9.6, buy: '2월 2일', sell: '2월 22일', days: 20 },
+        { ticker: 'UHS', name: '유니버설 헬스 서비스', winRate: 90, ret: 2.9, buy: '2월 4일', sell: '2월 24일', days: 20 },
+        { ticker: 'MOS', name: '모자이크', winRate: 90, ret: 5.8, buy: '2월 2일', sell: '2월 27일', days: 20 },
+        { ticker: 'FTNT', name: '포티넷', winRate: 90, ret: 8.0, buy: '2월 1일', sell: '3월 2일', days: 15 },
+      ],
+      3: [
+        { ticker: 'CMG', name: '치폴레', winRate: 95, ret: 10.3, buy: '3월 18일', sell: '4월 17일', days: 20 },
+        { ticker: 'ISRG', name: '인튜이티브 서지컬', winRate: 95, ret: 7.6, buy: '3월 14일', sell: '4월 13일', days: 20 },
+        { ticker: 'MSFT', name: '마이크로소프트', winRate: 85, ret: 3.9, buy: '3월 16일', sell: '4월 10일', days: 20 },
+        { ticker: 'EWH', name: '아이셰어즈 MSCI 홍콩 ETF', winRate: 90, ret: 4.0, buy: '3월 28일', sell: '5월 2일', days: 20 },
+        { ticker: 'INDA', name: '아이셰어즈 MSCI 인도 ETF', winRate: 86, ret: 3.0, buy: '3월 22일', sell: '4월 16일', days: 14 },
+      ],
+      4: [
+        { ticker: 'AXP', name: '아메리칸 익스프레스', winRate: 90, ret: 5.3, buy: '4월 10일', sell: '4월 30일', days: 20 },
+        { ticker: 'MA', name: '마스터카드', winRate: 88, ret: 3.5, buy: '4월 4일', sell: '5월 4일', days: 17 },
+        { ticker: 'KKR', name: 'KKR', winRate: 88, ret: 4.3, buy: '4월 8일', sell: '4월 28일', days: 18 },
+        { ticker: 'META', name: '메타 플랫폼스', winRate: 85, ret: 5.2, buy: '4월 14일', sell: '5월 4일', days: 13 },
+        { ticker: 'IEFA', name: '아이셰어즈 코어 MSCI EAFE ETF', winRate: 85, ret: 2.6, buy: '4월 8일', sell: '4월 28일', days: 13 },
+      ],
+      5: [
+        { ticker: 'NVDA', name: '엔비디아', winRate: 100, ret: 9.1, buy: '5월 24일', sell: '6월 23일', days: 14 },
+        { ticker: 'AMD', name: 'AMD', winRate: 100, ret: 10.7, buy: '5월 6일', sell: '6월 5일', days: 13 },
+        { ticker: 'SOXX', name: '아이셰어즈 반도체 ETF', winRate: 100, ret: 6.9, buy: '5월 12일', sell: '6월 11일', days: 13 },
+        { ticker: 'XBI', name: 'SPDR S&P 바이오테크 ETF', winRate: 100, ret: 5.4, buy: '5월 12일', sell: '6월 4일', days: 12 },
+        { ticker: 'TSLA', name: '테슬라', winRate: 93, ret: 11.2, buy: '5월 22일', sell: '6월 21일', days: 15 },
+      ],
+      6: [
+        { ticker: 'NFLX', name: '넷플릭스', winRate: 100, ret: 9.0, buy: '6월 10일', sell: '7월 10일', days: 15 },
+        { ticker: 'MPC', name: '마라톤 페트롤리엄', winRate: 93, ret: 7.4, buy: '6월 26일', sell: '7월 31일', days: 15 },
+        { ticker: 'QQQ', name: '인베스코 QQQ ETF', winRate: 90, ret: 2.6, buy: '6월 10일', sell: '7월 15일', days: 20 },
+        { ticker: 'Nifty 50', name: '니프티 50', winRate: 94, ret: 3.6, buy: '6월 24일', sell: '7월 24일', days: 18 },
+        { ticker: 'IBB', name: '아이셰어즈 바이오테크놀로지 ETF', winRate: 93, ret: 5.7, buy: '6월 18일', sell: '7월 23일', days: 15 },
+      ],
+      7: [
+        { ticker: 'QQQ', name: '인베스코 QQQ ETF', winRate: 95, ret: 3.7, buy: '6월 28일', sell: '7월 23일', days: 20 },
+        { ticker: 'SCHD', name: '슈왑 미국 배당주 ETF', winRate: 100, ret: 3.0, buy: '6월 30일', sell: '7월 30일', days: 14 },
+        { ticker: 'EMB', name: '아이셰어즈 JP모건 신흥국 채권 ETF', winRate: 100, ret: 1.5, buy: '7월 6일', sell: '7월 31일', days: 17 },
+        { ticker: 'XRP', name: '리플', winRate: 88, ret: 22.5, buy: '7월 10일', sell: '8월 1일', days: 8 },
+        { ticker: 'BNB', name: 'BNB(바이낸스코인)', winRate: 88, ret: 12.4, buy: '7월 5일', sell: '8월 1일', days: 8 },
+      ],
+      8: [
+        { ticker: 'NVDA', name: '엔비디아', winRate: 90, ret: 6.6, buy: '8월 6일', sell: '8월 26일', days: 20 },
+        { ticker: 'RCL', name: '로열 캐리비안', winRate: 85, ret: 7.9, buy: '8월 20일', sell: '9월 14일', days: 20 },
+        { ticker: 'AMP', name: '아메리프라이즈 파이낸셜', winRate: 94, ret: 4.0, buy: '8월 20일', sell: '9월 14일', days: 18 },
+        { ticker: 'TSLA', name: '테슬라', winRate: 87, ret: 9.0, buy: '8월 10일', sell: '9월 19일', days: 15 },
+        { ticker: 'INDA', name: '아이셰어즈 MSCI 인도 ETF', winRate: 92, ret: 3.2, buy: '8월 22일', sell: '9월 21일', days: 13 },
+      ],
+      9: [
+        { ticker: 'UNM', name: '유넘', winRate: 85, ret: 2.5, buy: '9월 2일', sell: '10월 7일', days: 20 },
+        { ticker: 'TSLA', name: '테슬라', winRate: 87, ret: 6.6, buy: '9월 6일', sell: '9월 20일', days: 15 },
+        { ticker: '설탕선물', name: '설탕 선물', winRate: 100, ret: 11.2, buy: '9월 1일', sell: '10월 6일', days: 13 },
+        { ticker: 'BTC', name: '비트코인', winRate: 100, ret: 32.2, buy: '9월 25일', sell: '11월 6일', days: 10 },
+        { ticker: 'XRP', name: '리플', winRate: 100, ret: 20.4, buy: '9월 12일', sell: '11월 11일', days: 8 },
+      ],
+      10: [
+        { ticker: 'GPS', name: '갭', winRate: 85, ret: 5.1, buy: '10월 10일', sell: '11월 9일', days: 20 },
+        { ticker: 'GS', name: '골드만삭스', winRate: 100, ret: 7.6, buy: '10월 1일', sell: '11월 5일', days: 15 },
+        { ticker: 'ADBE', name: '어도비', winRate: 86, ret: 6.4, buy: '10월 4일', sell: '11월 8일', days: 21 },
+        { ticker: 'RL', name: '랄프 로렌', winRate: 85, ret: 5.3, buy: '10월 16일', sell: '11월 10일', days: 20 },
+        { ticker: 'BNB', name: 'BNB(바이낸스코인)', winRate: 100, ret: 7.9, buy: '10월 1일', sell: '10월 26일', days: 7 },
+      ],
+      11: [
+        { ticker: 'NKE', name: '나이키', winRate: 100, ret: 4.3, buy: '11월 12일', sell: '12월 2일', days: 20 },
+        { ticker: 'OMC', name: '옴니콤 그룹', winRate: 100, ret: 3.9, buy: '11월 12일', sell: '12월 2일', days: 20 },
+        { ticker: 'SPY', name: 'SPDR S&P 500 ETF', winRate: 90, ret: 2.0, buy: '11월 12일', sell: '12월 7일', days: 20 },
+        { ticker: 'BTC', name: '비트코인', winRate: 91, ret: 4.4, buy: '11월 26일', sell: '12월 26일', days: 11 },
+        { ticker: 'ETH', name: '이더리움', winRate: 88, ret: 6.1, buy: '11월 26일', sell: '12월 26일', days: 8 },
+      ],
+      12: [
+        { ticker: 'MU', name: '마이크론 테크놀로지', winRate: 85, ret: 8.7, buy: '12월 12일', sell: '1월 11일', days: 20 },
+        { ticker: 'IBB', name: '아이셰어즈 바이오테크놀로지 ETF', winRate: 85, ret: 3.7, buy: '12월 10일', sell: '1월 14일', days: 20 },
+        { ticker: 'IHI', name: '아이셰어즈 미국 의료기기 ETF', winRate: 94, ret: 2.8, buy: '12월 18일', sell: '1월 12일', days: 18 },
+        { ticker: 'BNB', name: 'BNB(바이낸스코인)', winRate: 88, ret: 14.1, buy: '12월 20일', sell: '1월 14일', days: 8 },
+        { ticker: 'LINK', name: '체인링크', winRate: 100, ret: 35.7, buy: '12월 30일', sell: '1월 19일', days: 7 },
+      ],
+    };
+
+    function buyDateKey(buy) {
+      const m = buy.match(/(\d+)월\s*(\d+)일/);
+      return m ? parseInt(m[1], 10) * 100 + parseInt(m[2], 10) : 0;
+    }
+
+    Object.values(MONTHLY_PICKS).forEach(items => items.sort((a, b) => buyDateKey(a.buy) - buyDateKey(b.buy)));
+
+    function renderMonthlyPicks(month) {
+      const list = document.getElementById('mo_list');
+      const items = MONTHLY_PICKS[month] || [];
+      list.innerHTML = items.map(it => `
+        <div class="watch-card">
+          <div class="watch-card-head">
+            <div class="watch-card-title-row">
+              <span class="watch-symbol">${it.name}</span>
+              <span class="month-pick-badge">+${it.ret.toFixed(1)}%</span>
+            </div>
+            <div class="watch-card-sub">승률 ${it.winRate}% · <span class="mo-buy">[매수]${it.buy.replace(/\s/g, '')}</span> <span class="mo-sell">[매도]${it.sell.replace(/\s/g, '')}</span> (${it.days}일 보유)</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    (function initMonthlyPicks() {
+      const pillRow = document.getElementById('mo_pillRow');
+      for (let m = 1; m <= 12; m++) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'month-pill';
+        btn.textContent = m + '월';
+        btn.dataset.month = m;
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.month-pill').forEach(p => p.classList.toggle('active', p === btn));
+          renderMonthlyPicks(m);
+          localStorage.setItem('sc_mo_month', m);
+          btn.scrollIntoView({ inline: 'center', block: 'nearest' });
+        });
+        pillRow.appendChild(btn);
+      }
+
+      const savedMonth = parseInt(localStorage.getItem('sc_mo_month'), 10) || (new Date().getMonth() + 1);
+      const initBtn = pillRow.querySelector(`[data-month="${savedMonth}"]`);
+      if (initBtn) {
+        initBtn.classList.add('active');
+        renderMonthlyPicks(savedMonth);
+      }
+    })();
+
     /* ── Tab switching ── */
 
     const tabBtns     = document.querySelectorAll('.tab');
@@ -3047,6 +3257,10 @@
         tabBtns.forEach(b => b.classList.toggle('active', b === btn));
         tabContents.forEach(s => s.classList.toggle('active', s.id === 'tab-' + target));
         localStorage.setItem('sc_active_tab', target);
+        if (target === 'monthly') {
+          const activePill = document.querySelector('.month-pill.active');
+          if (activePill) activePill.scrollIntoView({ inline: 'center', block: 'nearest' });
+        }
       });
     });
 
@@ -3373,20 +3587,26 @@
         });
       }
 
-      function openForm(trade) {
+      function openForm(trade, prefill) {
         editingId = trade ? trade.id : null;
         setFormType(trade ? trade.type : 'buy');
-        symbolInput.value = trade ? trade.symbol : '';
+        symbolInput.value = trade ? trade.symbol : (prefill ? prefill.symbol : '');
         dateInput.value   = trade ? trade.date : todayStr();
-        qtyInput.value    = trade ? toComma(trade.qty) : '';
-        priceInput.value  = trade ? toComma(trade.price) : '';
+        qtyInput.value    = trade ? toComma(trade.qty) : (prefill && prefill.qty ? toComma(prefill.qty) : '');
+        priceInput.value  = trade ? toComma(trade.price) : (prefill && prefill.price ? toComma(prefill.price) : '');
         reasonInput.value = trade ? trade.reason : '';
         formPhotos = trade && trade.photos ? [...trade.photos] : [];
         renderFormPhotos();
         updateSymbolDatalist();
         formCard.style.display = '';
         formCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        symbolInput.focus();
+        if (prefill && prefill.qty) qtyInput.focus(); else symbolInput.focus();
+      }
+
+      // 보유 중인 종목을 눌러 바로 매매 기록을 추가할 때, 현재 보유 수량/평단가를 기본값으로 채워준다
+      function openFormForSymbol(symbol) {
+        const pos = computePosition(groupBySymbol().get(symbol) || []);
+        openForm(null, pos.qty > 0 ? { symbol, qty: pos.qty, price: pos.avgCost } : { symbol });
       }
 
       function closeForm() {
@@ -3525,6 +3745,7 @@
               <div class="trade-card-title-row">
                 <span class="trade-symbol">${escapeHtml(symbol)}</span>
                 <span class="trade-badge ${pos.status}">${badgeText}</span>
+                <button type="button" class="trade-add-lot-btn" data-symbol="${escapeHtml(symbol)}" title="매매 기록 추가">+</button>
                 <span class="trade-chevron">▾</span>
               </div>
               <div class="trade-card-stats">${statsHtml}</div>
@@ -3556,6 +3777,13 @@
             if (expandedSymbols.has(symbol)) expandedSymbols.delete(symbol);
             else expandedSymbols.add(symbol);
             card.classList.toggle('expanded');
+          });
+        });
+
+        listEl.querySelectorAll('.trade-add-lot-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            openFormForSymbol(btn.dataset.symbol);
           });
         });
 

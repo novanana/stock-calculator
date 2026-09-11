@@ -1068,6 +1068,82 @@
       cursor: pointer;
     }
 
+    .trade-lot-pnl {
+      font-size: 12px;
+      font-weight: 600;
+      margin-top: 4px;
+    }
+
+    .trade-lot-pnl.pos { color: var(--green); }
+    .trade-lot-pnl.neg { color: var(--red); }
+
+    .trade-month-nav {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .trade-month-arrow {
+      flex-shrink: 0;
+      width: 32px;
+      height: 32px;
+      border: none;
+      border-radius: 50%;
+      background: var(--surface);
+      color: var(--text);
+      font-size: 17px;
+      font-weight: 700;
+      font-family: inherit;
+      line-height: 1;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .trade-month-arrow:disabled {
+      color: var(--text3);
+      opacity: 0.35;
+      cursor: default;
+    }
+
+    .trade-month-info {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      text-align: center;
+    }
+
+    .trade-month-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .trade-month-summary {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .trade-month-summary .trade-month-rate { font-size: 12px; font-weight: 600; }
+    .trade-month-summary.pos { color: var(--green); }
+    .trade-month-summary.neg { color: var(--red); }
+    .trade-month-summary.flat { color: var(--text3); font-weight: 500; }
+
+    .trade-month-cards {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
     /* Trade form */
     .trade-form-card {
       background: var(--surface);
@@ -3601,6 +3677,7 @@
       let editingId = null;
       let formType = 'buy';
       let formPhotos = [];
+      let currentMonthKey = null;
       const expandedSymbols = new Set();
 
       const formCard     = document.getElementById('tr_formCard');
@@ -3715,6 +3792,7 @@
           trades.push(record);
           if (!saveTrades()) { trades.pop(); return; }
         }
+        currentMonthKey = monthKey(date);
         closeForm();
         render();
       });
@@ -3765,27 +3843,60 @@
         return map;
       }
 
-      function renderCard(symbol, symbolTrades) {
-        const pos = computePosition(symbolTrades);
-        const expanded = expandedSymbols.has(symbol);
-        const badgeText = { holding: '보유중', partial: '부분매도', closed: '매도완료' }[pos.status];
+      // 종목별 매매를 시간순으로 훑으며 매도 건마다 그 시점 실현손익/원가를 함께 기록한다 (월별 집계용)
+      function buildLedger() {
+        const ledger = new Map();
+        groupBySymbol().forEach((symbolTrades, symbol) => {
+          const sorted = [...symbolTrades].sort((a, b) =>
+            a.date === b.date ? a.createdAt - b.createdAt : a.date.localeCompare(b.date));
+          let qty = 0, avgCost = 0;
+          ledger.set(symbol, sorted.map(t => {
+            let pnl = null, costBasis = null;
+            if (t.type === 'buy') {
+              avgCost = qty + t.qty > 0 ? (avgCost * qty + t.price * t.qty) / (qty + t.qty) : t.price;
+              qty += t.qty;
+            } else {
+              const sellQty = Math.min(t.qty, Math.max(qty, 0));
+              costBasis = avgCost * sellQty;
+              pnl = (t.price - avgCost) * sellQty;
+              qty -= t.qty;
+            }
+            return { ...t, pnl, costBasis, qtyAfter: qty, avgCostAfter: avgCost };
+          }));
+        });
+        return ledger;
+      }
 
-        const sorted = [...symbolTrades].sort((a, b) =>
-          b.date === a.date ? b.createdAt - a.createdAt : b.date.localeCompare(a.date));
+      function monthKey(dateStr) { return dateStr.slice(0, 7); }
+
+      function renderCard(mk, symbol, monthTrades) {
+        const cardKey = mk + '::' + symbol;
+        const expanded = expandedSymbols.has(cardKey);
+
+        const last = monthTrades[monthTrades.length - 1];
+        const qty = last.qtyAfter, avgCost = last.avgCostAfter;
+        const hasSell = monthTrades.some(t => t.type === 'sell');
+        const monthPnl = monthTrades.reduce((sum, t) => sum + (t.pnl || 0), 0);
+        const status = qty > 0 ? (hasSell ? 'partial' : 'holding') : 'closed';
+        const badgeText = { holding: '보유중', partial: '부분매도', closed: '매도완료' }[status];
+
+        const sortedDesc = [...monthTrades].reverse();
+        const lastBuy = sortedDesc.find(t => t.type === 'buy');
+        const lastSell = sortedDesc.find(t => t.type === 'sell');
 
         let statsHtml = '';
-        if (pos.qty > 0 && pos.lastBuyDate) {
-          statsHtml += `<span class="trade-date-tag buy">매수 ${pos.lastBuyDate}</span>`;
-        } else if (pos.qty <= 0 && pos.lastSellDate) {
-          statsHtml += `<span class="trade-date-tag sell">매도 ${pos.lastSellDate}</span>`;
+        if (qty > 0 && lastBuy) {
+          statsHtml += `<span class="trade-date-tag buy">매수 ${lastBuy.date}</span>`;
+        } else if (qty <= 0 && lastSell) {
+          statsHtml += `<span class="trade-date-tag sell">매도 ${lastSell.date}</span>`;
         }
-        if (pos.qty > 0) statsHtml += `<span>보유 ${toComma(pos.qty)}주 · 평단 ${toComma(pos.avgCost)}원</span>`;
-        if (pos.sellCount > 0) {
-          const cls = pos.realizedPnl >= 0 ? 'pos' : 'neg';
-          statsHtml += `<span class="trade-pnl ${cls}">실현 ${pos.realizedPnl >= 0 ? '+' : ''}${toComma(pos.realizedPnl)}원</span>`;
+        if (qty > 0) statsHtml += `<span>보유 ${toComma(qty)}주 · 평단 ${toComma(avgCost)}원</span>`;
+        if (hasSell) {
+          const cls = monthPnl >= 0 ? 'pos' : 'neg';
+          statsHtml += `<span class="trade-pnl ${cls}">이달 실현 ${monthPnl >= 0 ? '+' : ''}${toComma(monthPnl)}원</span>`;
         }
 
-        const lotsHtml = sorted.map(t => `
+        const lotsHtml = sortedDesc.map(t => `
           <div class="trade-lot">
             <span class="trade-lot-type ${t.type}">${t.type === 'buy' ? '매수' : '매도'}</span>
             <div class="trade-lot-body">
@@ -3794,6 +3905,7 @@
                 <span>${toComma(t.qty * t.price)}원</span>
               </div>
               <div class="trade-lot-date">${t.date}</div>
+              ${t.type === 'sell' ? `<div class="trade-lot-pnl ${t.pnl >= 0 ? 'pos' : 'neg'}">실현손익 ${t.pnl >= 0 ? '+' : ''}${toComma(t.pnl)}원${t.costBasis > 0 ? ` (${t.pnl >= 0 ? '+' : ''}${(t.pnl / t.costBasis * 100).toFixed(2)}%)` : ''}</div>` : ''}
               ${t.reason ? `<div class="trade-lot-reason">${escapeHtml(t.reason)}</div>` : ''}
               ${t.photos && t.photos.length ? `<div class="trade-lot-photos">${t.photos.map(src => `<img class="trade-lot-photo" src="${src}">`).join('')}</div>` : ''}
             </div>
@@ -3805,11 +3917,11 @@
         `).join('');
 
         return `
-          <div class="trade-card${expanded ? ' expanded' : ''}" data-symbol="${escapeHtml(symbol)}">
+          <div class="trade-card${expanded ? ' expanded' : ''}" data-card-key="${escapeHtml(cardKey)}" data-symbol="${escapeHtml(symbol)}">
             <div class="trade-card-head">
               <div class="trade-card-title-row">
                 <span class="trade-symbol">${escapeHtml(symbol)}</span>
-                <span class="trade-badge ${pos.status}">${badgeText}</span>
+                <span class="trade-badge ${status}">${badgeText}</span>
                 <button type="button" class="trade-add-lot-btn" data-symbol="${escapeHtml(symbol)}" title="매매 기록 추가">+</button>
                 <span class="trade-chevron">▾</span>
               </div>
@@ -3818,6 +3930,29 @@
             <div class="trade-card-body">${lotsHtml}</div>
           </div>
         `;
+      }
+
+      function renderMonthSummary(symbolMap) {
+        let totalPnl = 0, totalCost = 0;
+        symbolMap.forEach(monthTrades => {
+          monthTrades.forEach(t => {
+            if (t.type === 'sell') { totalPnl += t.pnl; totalCost += t.costBasis; }
+          });
+        });
+        const returnPct = totalCost > 0 ? (totalPnl / totalCost * 100) : null;
+        const cls = totalCost === 0 ? 'flat' : (totalPnl >= 0 ? 'pos' : 'neg');
+        const html = totalCost > 0
+          ? `<span class="trade-month-rate">${returnPct >= 0 ? '+' : ''}${returnPct.toFixed(2)}%</span><span class="trade-month-amt">${totalPnl >= 0 ? '+' : ''}${toComma(totalPnl)}원</span>`
+          : `<span class="trade-month-amt">실현손익 없음</span>`;
+        return `<span class="trade-month-summary ${cls}">${html}</span>`;
+      }
+
+      function renderMonthCards(mk, symbolMap) {
+        const symbols = [...symbolMap.keys()].sort((a, b) => {
+          const la = symbolMap.get(a), lb = symbolMap.get(b);
+          return lb[lb.length - 1].date.localeCompare(la[la.length - 1].date);
+        });
+        return symbols.map(s => renderCard(mk, s, symbolMap.get(s))).join('');
       }
 
       function render() {
@@ -3829,18 +3964,69 @@
           if (searchText && !s.toLowerCase().includes(searchText)) return false;
           return true;
         });
+        const symbolSet = new Set(symbols);
 
-        symbols.sort((a, b) => computePosition(groups.get(b)).lastDate.localeCompare(computePosition(groups.get(a)).lastDate));
+        const ledger = buildLedger();
+        const monthMap = new Map();
+        ledger.forEach((symbolTrades, symbol) => {
+          if (!symbolSet.has(symbol)) return;
+          symbolTrades.forEach(t => {
+            const mk = monthKey(t.date);
+            if (!monthMap.has(mk)) monthMap.set(mk, new Map());
+            const bySymbol = monthMap.get(mk);
+            if (!bySymbol.has(symbol)) bySymbol.set(symbol, []);
+            bySymbol.get(symbol).push(t);
+          });
+        });
 
-        emptyEl.style.display = symbols.length ? 'none' : '';
-        listEl.innerHTML = symbols.map(symbol => renderCard(symbol, groups.get(symbol))).join('');
+        const months = [...monthMap.keys()].sort((a, b) => b.localeCompare(a));
+
+        emptyEl.style.display = months.length ? 'none' : '';
+
+        if (!months.length) {
+          currentMonthKey = null;
+          listEl.innerHTML = '';
+          return;
+        }
+
+        if (!months.includes(currentMonthKey)) currentMonthKey = months[0];
+        const idx = months.indexOf(currentMonthKey);
+        const [y, m] = currentMonthKey.split('-');
+        const symbolMap = monthMap.get(currentMonthKey);
+        const atOldest = idx >= months.length - 1;
+        const atNewest = idx <= 0;
+
+        listEl.innerHTML = `
+          <div class="trade-month-nav">
+            <button type="button" class="trade-month-arrow" id="tr_monthPrev" ${atOldest ? 'disabled' : ''}>‹</button>
+            <div class="trade-month-info">
+              <span class="trade-month-title">${y}년 ${Number(m)}월</span>
+              ${renderMonthSummary(symbolMap)}
+            </div>
+            <button type="button" class="trade-month-arrow" id="tr_monthNext" ${atNewest ? 'disabled' : ''}>›</button>
+          </div>
+          <div class="trade-month-cards">${renderMonthCards(currentMonthKey, symbolMap)}</div>
+        `;
+
+        if (!atOldest) {
+          listEl.querySelector('#tr_monthPrev').addEventListener('click', () => {
+            currentMonthKey = months[idx + 1];
+            render();
+          });
+        }
+        if (!atNewest) {
+          listEl.querySelector('#tr_monthNext').addEventListener('click', () => {
+            currentMonthKey = months[idx - 1];
+            render();
+          });
+        }
 
         listEl.querySelectorAll('.trade-card-head').forEach(head => {
           head.addEventListener('click', () => {
             const card = head.closest('.trade-card');
-            const symbol = card.dataset.symbol;
-            if (expandedSymbols.has(symbol)) expandedSymbols.delete(symbol);
-            else expandedSymbols.add(symbol);
+            const key = card.dataset.cardKey;
+            if (expandedSymbols.has(key)) expandedSymbols.delete(key);
+            else expandedSymbols.add(key);
             card.classList.toggle('expanded');
           });
         });
